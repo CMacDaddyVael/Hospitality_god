@@ -1,23 +1,18 @@
-/**
- * Agent Task Queue — Constants
- */
+export const QUEUE_NAMES = {
+  LISTING_OPTIMIZATION: 'listing-optimization',
+  HEALTH_SCORE: 'health-score',
+  REVIEW_RESPONSE: 'review-response',
+  SOCIAL_POST: 'social-post',
+  GUEST_MESSAGE: 'guest-message',
+} as const
 
-export const TASK_TYPES = [
-  'listing_analysis',
-  'review_response',
-  'guest_message',
-  'social_post',
-  'health_score',
-] as const;
+export const JOB_TYPES = {
+  LISTING_OPTIMIZATION: 'listing_optimization',
+  HEALTH_SCORE: 'health_score',
+  REVIEW_RESPONSE: 'review_response',
+  SOCIAL_POST: 'social_post',
+  GUEST_MESSAGE: 'guest_message',
+} as const
 
-/** Maximum attempts before a task is permanently failed */
-export const MAX_RETRY_COUNT = 3;
-
-/** Maximum concurrent tasks per property (prevents platform rate limiting) */
-export const MAX_CONCURRENT_PER_PROPERTY = 10;
-
-/** Base backoff in minutes — multiplied by retry_count */
-export const RETRY_BACKOFF_MINUTES = 5;
-
-/** Cron dispatcher batch size */
-export const DISPATCHER_BATCH_SIZE = 50;
+// Max regenerations per content item per calendar day
+export const MAX_REGENERATIONS_PER_DAY = 3
