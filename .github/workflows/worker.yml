@@ -1,0 +1,47 @@
+name: Worker — Build & Ship
+
+on:
+  schedule:
+    # Every 3 hours, 8x daily
+    - cron: '37 */3 * * *'
+  issues:
+    types: [opened, labeled]
+  workflow_dispatch: # Manual trigger
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  work:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Don't run on issues created by the orchestrator simultaneously
+    concurrency:
+      group: worker
+      cancel-in-progress: false
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Configure git
+        run: |
+          git config user.name "VAEL Worker Agent"
+          git config user.email "worker@vael.ai"
+
+      - name: Pick up issue and build
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/worker.mjs
