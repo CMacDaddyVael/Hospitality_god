@@ -241,8 +241,17 @@ Rules:
 
     console.log(`\nPR created: ${prUrl}`);
 
+    // Auto-merge the PR
+    try {
+      run(`gh pr merge --merge --head "${branchName}"`);
+      console.log("Auto-merged to main");
+    } catch (mergeErr) {
+      console.log("Auto-merge failed (likely conflict) — PR stays open for manual review");
+    }
+
     // Switch back to main
     run("git checkout main");
+    run("git pull origin main");
   } catch (err) {
     console.error("Failed to create PR:", err.message);
     run("git checkout main");
