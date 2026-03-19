@@ -2,8 +2,8 @@ name: Orchestrator — Task Manager
 
 on:
   schedule:
-    # Every 4 hours, 6x daily
-    - cron: '3 */4 * * *'
+    # Every hour
+    - cron: '3 * * * *'
   workflow_dispatch: # Manual trigger
 
 permissions:

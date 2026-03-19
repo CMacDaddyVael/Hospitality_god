@@ -4,11 +4,11 @@ on:
   schedule:
     # Staggered so they read each other's memos
     # CEO first (sets priorities), then others react
-    - cron: '11 */6 * * *'   # CEO: every 6 hrs
-    - cron: '22 1,7,13,19 * * *'  # CPO: 4x daily
-    - cron: '33 2,8,14,20 * * *'  # CTO: 4x daily
-    - cron: '44 3,9,15,21 * * *'  # CMO: 4x daily
-    - cron: '55 4,10,16,22 * * *' # CRO: 4x daily
+    - cron: '10 */2 * * *'   # CEO: every 2 hrs
+    - cron: '20 */2 * * *'  # CPO: every 2 hrs
+    - cron: '30 */2 * * *'  # CTO: every 2 hrs
+    - cron: '40 */2 * * *'  # CMO: every 2 hrs
+    - cron: '50 */2 * * *'  # CRO: every 2 hrs
   workflow_dispatch:
     inputs:
       role:

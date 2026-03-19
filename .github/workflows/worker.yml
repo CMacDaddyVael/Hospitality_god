@@ -2,8 +2,8 @@ name: Workers — Parallel Build & Ship
 
 on:
   schedule:
-    # Every 3 hours
-    - cron: '37 */3 * * *'
+    # Every 45 minutes
+    - cron: '*/45 * * * *'
   issues:
     types: [opened]
   workflow_dispatch: # Manual trigger
