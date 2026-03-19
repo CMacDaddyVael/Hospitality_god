@@ -4,7 +4,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "research": "node scripts/hospitality-research.mjs"
+    "research": "node scripts/hospitality-research.mjs",
+    "orchestrate": "node scripts/orchestrator.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0"
