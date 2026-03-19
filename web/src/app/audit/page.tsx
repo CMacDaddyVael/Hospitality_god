@@ -234,9 +234,9 @@ export default function AuditPage() {
             Your AI marketing team will optimize your listing, write review responses,
             create social content, and update your copy every season. Just $59/mo.
           </p>
-          <button className="px-8 py-4 bg-green-500 hover:bg-green-400 text-white font-semibold rounded-xl transition text-lg">
+          <a href="/dashboard" className="inline-block px-8 py-4 bg-green-500 hover:bg-green-400 text-white font-semibold rounded-xl transition text-lg">
             Start Pro — $59/mo →
-          </button>
+          </a>
           <p className="mt-3 text-gray-500 text-sm">Cancel anytime. Less than one night&apos;s booking.</p>
         </div>
       </div>

@@ -1,52 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
-import * as cheerio from "cheerio";
+import { FirecrawlClient } from "@mendable/firecrawl-js";
 
 export const maxDuration = 60;
-
-async function scrapeListingPage(url: string): Promise<string> {
-  const res = await fetch(url, {
-    headers: {
-      "User-Agent":
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-      Accept: "text/html,application/xhtml+xml",
-      "Accept-Language": "en-US,en;q=0.9",
-    },
-  });
-
-  if (!res.ok) throw new Error(`Failed to fetch listing: ${res.status}`);
-
-  const html = await res.text();
-  const $ = cheerio.load(html);
-
-  // Remove scripts, styles, and nav elements
-  $("script, style, nav, footer, header, svg, noscript").remove();
-
-  // Get the main content text
-  const title = $("title").text();
-  const metaDescription = $('meta[name="description"]').attr("content") || "";
-  const bodyText = $("body").text().replace(/\s+/g, " ").trim().slice(0, 8000);
-
-  // Try to extract structured data
-  const jsonLd: string[] = [];
-  $('script[type="application/ld+json"]').each((_, el) => {
-    try {
-      jsonLd.push($(el).html() || "");
-    } catch {}
-  });
-
-  // Count images
-  const imageCount = $("img").length;
-
-  return `
-URL: ${url}
-Page Title: ${title}
-Meta Description: ${metaDescription}
-Image Count: ${imageCount}
-Structured Data: ${jsonLd.join("\n")}
-Page Content: ${bodyText}
-  `.trim();
-}
 
 export async function POST(req: NextRequest) {
   try {
@@ -56,23 +12,50 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "URL is required" }, { status: 400 });
     }
 
-    // Scrape the listing
-    let scrapedContent: string;
-    try {
-      scrapedContent = await scrapeListingPage(url);
-    } catch {
+    // Scrape with Firecrawl
+    const firecrawl = new FirecrawlClient({
+      apiKey: process.env.FIRECRAWL_API_KEY!,
+    });
+
+    console.log("Scraping:", url);
+    const scrapeResult = await firecrawl.scrape(url, {
+      formats: ["markdown"],
+      waitFor: 5000,
+    });
+
+    const markdown = (scrapeResult.markdown || "").slice(0, 12000);
+    const metadata = (scrapeResult.metadata || {}) as Record<string, string>;
+
+    if (!markdown || markdown.length < 100) {
+      console.error("Firecrawl returned too little content:", markdown.length);
       return NextResponse.json(
-        { error: "Could not access that URL. Please check the link and try again." },
+        { error: "Could not read that listing. Please check the URL and try again." },
         { status: 400 }
       );
     }
 
+    console.log("Scraped", markdown.length, "chars of markdown");
+
+    const scrapedContent = `
+URL: ${url}
+Page Title: ${metadata.title || ""}
+Meta Description: ${metadata.description || ""}
+OG Image: ${metadata.ogImage || ""}
+Status Code: ${metadata.statusCode || ""}
+
+Page Content (markdown):
+${markdown}
+    `.trim();
+
+    console.log("Scraped content length:", scrapedContent.length);
+
     // Analyze with Claude
     const client = new Anthropic();
 
+    console.log("Calling Claude...");
     const response = await client.messages.create({
       model: "claude-sonnet-4-6",
-      max_tokens: 4096,
+      max_tokens: 8192,
       messages: [
         {
           role: "user",
@@ -142,33 +125,42 @@ ${scrapedContent}
   "optimized_description_preview": "first 2-3 sentences of an optimized description"
 }
 
-Be specific and actionable. Reference actual content from the listing. Don't be generic. If you can't determine something from the scraped data, note that and still provide your best assessment.
+Be specific and actionable. Reference actual content from the listing. Don't be generic.
+Keep each findings and recommendations array to 2-3 items max. Keep descriptions concise (1-2 sentences each).
 
 IMPORTANT: Return ONLY valid JSON. No markdown, no code fences, no explanation.`,
         },
       ],
     });
 
-    const text = response.content[0].type === "text" ? response.content[0].text : "";
+    const text =
+      response.content[0].type === "text" ? response.content[0].text : "";
+    console.log("Claude response length:", text.length);
 
     // Parse the JSON response
     let audit;
     try {
-      // Strip any markdown code fences if present
-      const cleaned = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+      const cleaned = text
+        .replace(/```json\n?/g, "")
+        .replace(/```\n?/g, "")
+        .trim();
       audit = JSON.parse(cleaned);
-    } catch {
+    } catch (parseErr) {
+      console.error("JSON parse error:", parseErr);
+      console.error("Raw response:", text.slice(0, 500));
       return NextResponse.json(
         { error: "Failed to parse audit results. Please try again." },
         { status: 500 }
       );
     }
 
+    console.log("Audit complete. Score:", audit.overall_score);
     return NextResponse.json({ audit, url });
   } catch (err) {
-    console.error("Audit error:", err);
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("Audit error:", message);
     return NextResponse.json(
-      { error: "Audit failed. Please try again." },
+      { error: `Audit failed: ${message}` },
       { status: 500 }
     );
   }
