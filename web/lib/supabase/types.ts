@@ -4,98 +4,120 @@ export type Json =
   | boolean
   | null
   | { [key: string]: Json | undefined }
-  | Json[];
+  | Json[]
 
-export interface Database {
+export type Database = {
   public: {
     Tables: {
-      users: {
+      profiles: {
         Row: {
-          id: string;
-          email: string;
-          full_name: string | null;
-          avatar_url: string | null;
-          created_at: string;
-          updated_at: string;
-        };
+          id: string
+          created_at: string
+          updated_at: string
+          email: string
+          full_name: string | null
+          avatar_url: string | null
+          onboarding_completed: boolean
+          subscription_tier: 'free' | 'starter' | 'pro' | 'agency' | null
+          subscription_status: 'active' | 'canceled' | 'past_due' | 'trialing' | null
+          stripe_customer_id: string | null
+        }
         Insert: {
-          id: string;
-          email: string;
-          full_name?: string | null;
-          avatar_url?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
+          id: string
+          created_at?: string
+          updated_at?: string
+          email: string
+          full_name?: string | null
+          avatar_url?: string | null
+          onboarding_completed?: boolean
+          subscription_tier?: 'free' | 'starter' | 'pro' | 'agency' | null
+          subscription_status?: 'active' | 'canceled' | 'past_due' | 'trialing' | null
+          stripe_customer_id?: string | null
+        }
         Update: {
-          id?: string;
-          email?: string;
-          full_name?: string | null;
-          avatar_url?: string | null;
-          updated_at?: string;
-        };
-      };
-      properties: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          email?: string
+          full_name?: string | null
+          avatar_url?: string | null
+          onboarding_completed?: boolean
+          subscription_tier?: 'free' | 'starter' | 'pro' | 'agency' | null
+          subscription_status?: 'active' | 'canceled' | 'past_due' | 'trialing' | null
+          stripe_customer_id?: string | null
+        }
+      }
+      listings: {
         Row: {
-          id: string;
-          user_id: string;
-          name: string;
-          description: string | null;
-          platform: "airbnb" | "vrbo" | "both" | "other";
-          platform_listing_id: string | null;
-          platform_listing_url: string | null;
-          address: string | null;
-          city: string | null;
-          state: string | null;
-          country: string;
-          bedrooms: number | null;
-          bathrooms: number | null;
-          max_guests: number | null;
-          status: "active" | "inactive" | "pending";
-          created_at: string;
-          updated_at: string;
-        };
+          id: string
+          created_at: string
+          updated_at: string
+          user_id: string
+          platform: 'airbnb' | 'vrbo' | 'other'
+          platform_listing_id: string | null
+          url: string
+          title: string
+          description: string | null
+          property_type: string | null
+          location: string | null
+          price_per_night: number | null
+          rating: number | null
+          review_count: number | null
+          photos: Json
+          amenities: Json
+          health_score: number | null
+          last_synced_at: string | null
+        }
         Insert: {
-          id?: string;
-          user_id: string;
-          name: string;
-          description?: string | null;
-          platform?: "airbnb" | "vrbo" | "both" | "other";
-          platform_listing_id?: string | null;
-          platform_listing_url?: string | null;
-          address?: string | null;
-          city?: string | null;
-          state?: string | null;
-          country?: string;
-          bedrooms?: number | null;
-          bathrooms?: number | null;
-          max_guests?: number | null;
-          status?: "active" | "inactive" | "pending";
-          created_at?: string;
-          updated_at?: string;
-        };
+          id?: string
+          created_at?: string
+          updated_at?: string
+          user_id: string
+          platform: 'airbnb' | 'vrbo' | 'other'
+          platform_listing_id?: string | null
+          url: string
+          title: string
+          description?: string | null
+          property_type?: string | null
+          location?: string | null
+          price_per_night?: number | null
+          rating?: number | null
+          review_count?: number | null
+          photos?: Json
+          amenities?: Json
+          health_score?: number | null
+          last_synced_at?: string | null
+        }
         Update: {
-          name?: string;
-          description?: string | null;
-          platform?: "airbnb" | "vrbo" | "both" | "other";
-          platform_listing_id?: string | null;
-          platform_listing_url?: string | null;
-          address?: string | null;
-          city?: string | null;
-          state?: string | null;
-          country?: string;
-          bedrooms?: number | null;
-          bathrooms?: number | null;
-          max_guests?: number | null;
-          status?: "active" | "inactive" | "pending";
-          updated_at?: string;
-        };
-      };
-    };
-    Views: Record<string, never>;
-    Functions: Record<string, never>;
+          id?: string
+          created_at?: string
+          updated_at?: string
+          user_id?: string
+          platform?: 'airbnb' | 'vrbo' | 'other'
+          platform_listing_id?: string | null
+          url?: string
+          title?: string
+          description?: string | null
+          property_type?: string | null
+          location?: string | null
+          price_per_night?: number | null
+          rating?: number | null
+          review_count?: number | null
+          photos?: Json
+          amenities?: Json
+          health_score?: number | null
+          last_synced_at?: string | null
+        }
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
     Enums: {
-      property_platform: "airbnb" | "vrbo" | "both" | "other";
-      property_status: "active" | "inactive" | "pending";
-    };
-  };
+      [_ in never]: never
+    }
+  }
 }
