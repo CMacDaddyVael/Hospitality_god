@@ -203,7 +203,7 @@ Keep the memo under 400 words. Be opinionated. Disagree with the plan if you thi
     run(`gh label create "${role}" --color "0075ca" --description "${exec.title}" --force`);
 
     const tmpFile = join(ROOT, ".memo-tmp");
-    require("fs").writeFileSync(tmpFile, memoBody);
+    writeFileSync(tmpFile, memoBody);
     const url = run(
       `gh issue create --title "${memoTitle}" --body-file .memo-tmp --label "executive" --label "${role}"`
     );
@@ -231,7 +231,7 @@ Keep the memo under 400 words. Be opinionated. Disagree with the plan if you thi
 
     try {
       const tmpFile = join(ROOT, ".issue-tmp");
-      require("fs").writeFileSync(tmpFile, `${body}\n\n---\n*Created by ${exec.title} agent*`);
+      writeFileSync(tmpFile, `${body}\n\n---\n*Created by ${exec.title} agent*`);
       const url = run(
         `gh issue create --title "${title.replace(/"/g, '\\"')}" --body-file .issue-tmp --label "executive" --label "${role}"`
       );
