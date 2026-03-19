@@ -1,0 +1,12 @@
+{
+  "name": "hospitality-god",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "research": "node scripts/hospitality-research.mjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0"
+  }
+}

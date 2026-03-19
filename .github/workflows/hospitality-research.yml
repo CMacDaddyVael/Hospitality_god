@@ -1,0 +1,55 @@
+name: Hospitality Marketing Research Loop
+
+on:
+  schedule:
+    # 3x daily: midnight, 8am, 4pm EST (5am, 1pm, 9pm UTC)
+    - cron: '17 5 * * *'
+    - cron: '43 13 * * *'
+    - cron: '7 21 * * *'
+  workflow_dispatch: # Manual trigger from GitHub UI
+
+permissions:
+  contents: write
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run hospitality marketing research
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: npm run research
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if git diff --quiet knowledge-base/; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit updated knowledge base
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config user.name "VAEL Research Bot"
+          git config user.email "research-bot@vael.ai"
+          git add knowledge-base/
+          git commit -m "$(cat <<'EOF'
+          chore: update hospitality marketing knowledge base
+
+          Automated research loop — new findings added.
+          EOF
+          )"
+          git push
