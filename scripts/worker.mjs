@@ -38,33 +38,43 @@ function listFilesRecursive(dir, prefix = "") {
 
 async function work() {
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  const ghToken = process.env.GH_TOKEN;
   if (!apiKey) {
     console.error("ANTHROPIC_API_KEY not set");
     process.exit(1);
   }
 
-  // Find the oldest open issue (highest priority first)
-  let issues;
-  try {
-    issues = JSON.parse(
-      run('gh issue list --state open --limit 5 --json number,title,body,labels --sort created --order asc')
+  // Accept issue number from env (dispatched) or pick one
+  const issueNumber = process.env.ISSUE_NUMBER;
+
+  let issue;
+  if (issueNumber) {
+    // Dispatched mode — we've been assigned a specific issue
+    const data = JSON.parse(
+      run(`gh issue view ${issueNumber} --json number,title,body,labels`)
     );
-  } catch (err) {
-    console.log("No open issues or gh not available:", err.message);
-    return;
-  }
+    issue = data;
+  } else {
+    // Solo mode — pick the highest priority open issue
+    let issues;
+    try {
+      issues = JSON.parse(
+        run('gh issue list --state open --limit 5 --json number,title,body,labels --sort created --order asc')
+      );
+    } catch (err) {
+      console.log("No open issues or gh not available:", err.message);
+      return;
+    }
 
-  if (issues.length === 0) {
-    console.log("No open issues. Nothing to do.");
-    return;
-  }
+    if (issues.length === 0) {
+      console.log("No open issues. Nothing to do.");
+      return;
+    }
 
-  // Pick highest priority issue, or first one
-  const highPriority = issues.find((i) =>
-    i.labels?.some((l) => l.name === "priority/high")
-  );
-  const issue = highPriority || issues[0];
+    const highPriority = issues.find((i) =>
+      i.labels?.some((l) => l.name === "priority/high")
+    );
+    issue = highPriority || issues[0];
+  }
 
   console.log(`Working on issue #${issue.number}: ${issue.title}`);
 

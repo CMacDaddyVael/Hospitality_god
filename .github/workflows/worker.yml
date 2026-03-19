@@ -1,11 +1,11 @@
-name: Worker — Build & Ship
+name: Workers — Parallel Build & Ship
 
 on:
   schedule:
-    # Every 3 hours, 8x daily
+    # Every 3 hours
     - cron: '37 */3 * * *'
   issues:
-    types: [opened, labeled]
+    types: [opened]
   workflow_dispatch: # Manual trigger
 
 permissions:
@@ -14,13 +14,41 @@ permissions:
   pull-requests: write
 
 jobs:
-  work:
+  dispatch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    outputs:
+      matrix: ${{ steps.dispatcher.outputs.matrix }}
+      has_work: ${{ steps.dispatcher.outputs.has_work }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Find work to do
+        id: dispatcher
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/dispatcher.mjs
+
+  build:
+    needs: dispatch
+    if: needs.dispatch.outputs.has_work == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    # Don't run on issues created by the orchestrator simultaneously
-    concurrency:
-      group: worker
-      cancel-in-progress: false
+
+    strategy:
+      matrix: ${{ fromJson(needs.dispatch.outputs.matrix) }}
+      max-parallel: 10
+      fail-fast: false
 
     steps:
       - uses: actions/checkout@v4
@@ -40,8 +68,9 @@ jobs:
           git config user.name "VAEL Worker Agent"
           git config user.email "worker@vael.ai"
 
-      - name: Pick up issue and build
+      - name: Build issue #${{ matrix.number }} — ${{ matrix.title }}
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ matrix.number }}
         run: node scripts/worker.mjs

@@ -6,7 +6,8 @@
   "scripts": {
     "research": "node scripts/hospitality-research.mjs",
     "orchestrate": "node scripts/orchestrator.mjs",
-    "work": "node scripts/worker.mjs"
+    "work": "node scripts/worker.mjs",
+    "dispatch": "node scripts/dispatcher.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0"
