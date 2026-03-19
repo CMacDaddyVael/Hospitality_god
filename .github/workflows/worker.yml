@@ -47,7 +47,7 @@ jobs:
 
     strategy:
       matrix: ${{ fromJson(needs.dispatch.outputs.matrix) }}
-      max-parallel: 10
+      max-parallel: 2
       fail-fast: false
 
     steps:
