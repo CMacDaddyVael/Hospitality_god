@@ -48,8 +48,15 @@ const available = issues.filter((issue) => {
 
 console.log(`${available.length} issues ready for workers (${issues.length} total open)`);
 
+// CAP: max 5 issues per dispatch cycle to control costs
+const MAX_PER_CYCLE = 5;
+const capped = available.slice(0, MAX_PER_CYCLE);
+if (available.length > MAX_PER_CYCLE) {
+  console.log(`Capped to ${MAX_PER_CYCLE} workers this cycle (${available.length - MAX_PER_CYCLE} deferred)`);
+}
+
 // Output matrix for GitHub Actions
-const matrix = available.map((i) => ({
+const matrix = capped.map((i) => ({
   number: i.number,
   title: i.title,
 }));
