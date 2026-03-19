@@ -49,6 +49,13 @@ ${markdown}
 
     console.log("Scraped content length:", scrapedContent.length);
 
+    // Extract listing photos from markdown for lifestyle generation
+    const photoRegex = /https:\/\/a0\.muscache\.com\/im\/pictures\/[^\s)"\]]+/g;
+    const listingPhotos = [...new Set(markdown.match(photoRegex) || [])].filter(
+      (u) => !u.includes("icon") && !u.includes("avatar") && !u.includes("platform-asset")
+    );
+    console.log("Found", listingPhotos.length, "listing photos");
+
     // Analyze with Claude
     const client = new Anthropic();
 
@@ -155,7 +162,12 @@ IMPORTANT: Return ONLY valid JSON. No markdown, no code fences, no explanation.`
     }
 
     console.log("Audit complete. Score:", audit.overall_score);
-    return NextResponse.json({ audit, url });
+    return NextResponse.json({
+      audit,
+      url,
+      listingPhotos: listingPhotos.slice(0, 20),
+      propertyDescription: metadata.description || metadata.ogDescription || "",
+    });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.error("Audit error:", message);

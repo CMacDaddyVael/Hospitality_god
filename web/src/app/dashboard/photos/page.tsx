@@ -45,7 +45,7 @@ const PEOPLE = [
 ];
 
 export default function PhotoStudioPage() {
-  const [step, setStep] = useState<"configure" | "generating" | "results">("configure");
+  const [step, setStep] = useState<"loading" | "pick-photo" | "configure" | "generating" | "results">("loading");
   const [selectedScene, setSelectedScene] = useState("morning-coffee");
   const [selectedSeason, setSelectedSeason] = useState("summer");
   const [selectedAspect, setSelectedAspect] = useState("4:5");
@@ -56,6 +56,56 @@ export default function PhotoStudioPage() {
   const [error, setError] = useState("");
   const [showGallery, setShowGallery] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [listingPhotos, setListingPhotos] = useState<string[]>([]);
+  const [selectedPhotoUrl, setSelectedPhotoUrl] = useState<string | null>(null);
+  const [loadingPhotos, setLoadingPhotos] = useState(false);
+  const [propertyDescription, setPropertyDescription] = useState("");
+
+  // Load listing photos on mount
+  useEffect(() => {
+    const auditData = sessionStorage.getItem("audit_result");
+    if (!auditData) {
+      setStep("pick-photo");
+      return;
+    }
+
+    const parsed = JSON.parse(auditData);
+    const listingUrl = parsed.url || "";
+    if (!listingUrl) {
+      setStep("pick-photo");
+      return;
+    }
+
+    // Check if we already scraped photos
+    const cachedPhotos = localStorage.getItem("hg_listing_photos");
+    if (cachedPhotos) {
+      const cached = JSON.parse(cachedPhotos);
+      setListingPhotos(cached.photos || []);
+      setPropertyDescription(cached.description || "");
+      setSelectedPhotoUrl(cached.photos?.[0] || null);
+      setStep("pick-photo");
+      return;
+    }
+
+    // Scrape photos from listing
+    setLoadingPhotos(true);
+    fetch("/api/scrape-photos", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url: listingUrl }),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        const photos = data.photos || [];
+        setListingPhotos(photos);
+        setPropertyDescription(data.description || "");
+        if (photos.length > 0) setSelectedPhotoUrl(photos[0]);
+        localStorage.setItem("hg_listing_photos", JSON.stringify(data));
+        setStep("pick-photo");
+      })
+      .catch(() => setStep("pick-photo"))
+      .finally(() => setLoadingPhotos(false));
+  }, []);
 
   // Load gallery from localStorage
   useEffect(() => {
@@ -82,29 +132,11 @@ export default function PhotoStudioPage() {
     }, 2000);
 
     try {
-      // Get property photos
-      const auditData = sessionStorage.getItem("audit_result");
-      let listingUrl = "";
-      if (auditData) {
-        const parsed = JSON.parse(auditData);
-        listingUrl = parsed.url || "";
+      if (!selectedPhotoUrl) {
+        throw new Error("Please select a property photo first.");
       }
 
-      if (!listingUrl) {
-        throw new Error("No listing connected. Run an audit first to connect your property.");
-      }
-
-      const scrapeRes = await fetch("/api/scrape-photos", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: listingUrl }),
-      });
-      const scrapeData = await scrapeRes.json();
-      const propertyImageUrl = scrapeData.photos?.[0];
-
-      if (!propertyImageUrl) {
-        throw new Error("Could not find property photos from your listing.");
-      }
+      const propertyImageUrl = selectedPhotoUrl;
 
       const peopleMap: Record<string, string> = {
         solo: "A single guest",
@@ -120,7 +152,7 @@ export default function PhotoStudioPage() {
           propertyImageUrl,
           season: selectedSeason,
           sceneType: selectedScene,
-          propertyDescription: `${scrapeData.description || ""}. Show ${peopleMap[selectedPeople] || "a couple"} in the scene. Aspect ratio: ${selectedAspect}.`,
+          propertyDescription: `${propertyDescription}. Show ${peopleMap[selectedPeople] || "a couple"} in the scene. Aspect ratio: ${selectedAspect}.`,
         }),
       });
 
@@ -141,7 +173,7 @@ export default function PhotoStudioPage() {
         body: JSON.stringify({
           scene: selectedScene,
           season: selectedSeason,
-          propertyDescription: scrapeData.description || "",
+          propertyDescription: propertyDescription,
         }),
       });
 
@@ -255,9 +287,111 @@ export default function PhotoStudioPage() {
         </div>
       )}
 
+      {/* Loading photos */}
+      {step === "loading" && (
+        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+          <div className="animate-spin h-8 w-8 border-4 border-green-500 border-t-transparent rounded-full mx-auto mb-4" />
+          <p className="text-gray-500">Loading your listing photos...</p>
+        </div>
+      )}
+
+      {/* Step 0: Pick a photo */}
+      {step === "pick-photo" && (
+        <div className="space-y-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <h3 className="font-semibold mb-1">Choose a space from your listing</h3>
+            <p className="text-sm text-gray-400 mb-4">
+              Pick the room or area you want to create lifestyle content for
+            </p>
+
+            {listingPhotos.length > 0 ? (
+              <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                {listingPhotos.map((url, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setSelectedPhotoUrl(url)}
+                    className={`relative aspect-square rounded-xl overflow-hidden border-3 transition ${
+                      selectedPhotoUrl === url
+                        ? "border-green-500 ring-2 ring-green-500/30"
+                        : "border-gray-200 hover:border-gray-300"
+                    }`}
+                  >
+                    <img
+                      src={url}
+                      alt={`Listing photo ${i + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                    {selectedPhotoUrl === url && (
+                      <div className="absolute top-2 right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                        <span className="text-white text-xs">✓</span>
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-400 mb-4">No photos found from your listing. Run an audit first or paste a photo URL:</p>
+                <input
+                  type="url"
+                  placeholder="Paste a property photo URL..."
+                  className="w-full max-w-md px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      setSelectedPhotoUrl(e.target.value);
+                      setListingPhotos([e.target.value]);
+                    }
+                  }}
+                />
+              </div>
+            )}
+
+            {selectedPhotoUrl && (
+              <div className="mt-6 flex justify-end">
+                <button
+                  onClick={() => setStep("configure")}
+                  className="px-6 py-3 bg-green-500 hover:bg-green-400 text-white font-semibold rounded-xl transition"
+                >
+                  Continue with this photo →
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Selected photo preview */}
+          {selectedPhotoUrl && (
+            <div className="bg-white rounded-xl border border-gray-200 p-4">
+              <p className="text-xs text-gray-400 mb-2 font-medium uppercase tracking-wide">Selected space</p>
+              <img
+                src={selectedPhotoUrl}
+                alt="Selected property photo"
+                className="w-full max-h-64 object-cover rounded-lg"
+              />
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Step 1: Configure */}
       {step === "configure" && (
         <div className="space-y-6">
+          {/* Selected photo thumbnail + change */}
+          {selectedPhotoUrl && (
+            <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
+              <img src={selectedPhotoUrl} alt="" className="w-20 h-20 object-cover rounded-lg" />
+              <div className="flex-1">
+                <p className="text-sm font-medium">Selected space</p>
+                <p className="text-xs text-gray-400">This photo will be used as the base for your lifestyle image</p>
+              </div>
+              <button
+                onClick={() => setStep("pick-photo")}
+                className="px-3 py-1.5 text-sm text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-50 transition"
+              >
+                Change
+              </button>
+            </div>
+          )}
+
           {/* Scene */}
           <div className="bg-white rounded-xl border border-gray-200 p-6">
             <h3 className="font-semibold mb-1">What&apos;s happening?</h3>

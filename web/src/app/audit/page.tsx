@@ -76,6 +76,10 @@ export default function AuditPage() {
   const [audit, setAudit] = useState<AuditResult | null>(null);
   const [url, setUrl] = useState("");
   const [expandedCategory, setExpandedCategory] = useState<number | null>(null);
+  const [lifestyleImage, setLifestyleImage] = useState<string | null>(null);
+  const [lifestyleCaption, setLifestyleCaption] = useState("");
+  const [lifestyleHashtags, setLifestyleHashtags] = useState("");
+  const [generatingLifestyle, setGeneratingLifestyle] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -87,6 +91,49 @@ export default function AuditPage() {
     const data = JSON.parse(stored);
     setAudit(data.audit);
     setUrl(data.url);
+
+    // Auto-generate a lifestyle photo from the first listing image
+    const photos = data.listingPhotos || [];
+    if (photos.length > 0 && !lifestyleImage) {
+      setGeneratingLifestyle(true);
+
+      // Generate image and caption in parallel
+      Promise.all([
+        fetch("/api/generate-lifestyle", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            propertyImageUrl: photos[0],
+            season: (() => { const m = new Date().getMonth(); if (m >= 2 && m <= 4) return "spring"; if (m >= 5 && m <= 7) return "summer"; if (m >= 8 && m <= 10) return "fall"; return "winter"; })(),
+            sceneType: "morning-coffee",
+            propertyDescription: `${data.propertyDescription || ""}. Show a couple enjoying the space.`,
+          }),
+        }).then(r => r.ok ? r.json() : null).catch(() => null),
+        fetch("/api/generate-caption", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            scene: "morning-coffee",
+            season: "spring",
+            propertyDescription: data.propertyDescription || data.audit?.property_name || "",
+          }),
+        }).then(r => r.ok ? r.json() : null).catch(() => null),
+      ]).then(([imgData, captionData]) => {
+        if (imgData?.imageUrl) setLifestyleImage(imgData.imageUrl);
+        if (captionData?.caption) setLifestyleCaption(captionData.caption);
+        if (captionData?.hashtags) setLifestyleHashtags(captionData.hashtags);
+        setGeneratingLifestyle(false);
+
+        // Cache listing photos for Photo Studio
+        if (photos.length > 0) {
+          localStorage.setItem("hg_listing_photos", JSON.stringify({
+            photos,
+            description: data.propertyDescription || "",
+          }));
+        }
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
   if (!audit) {
@@ -123,6 +170,61 @@ export default function AuditPage() {
               <p className="text-gray-600">{audit.summary}</p>
             </div>
           </div>
+        </div>
+
+        {/* Lifestyle Photo Preview — The Magic Moment */}
+        <div className="bg-white rounded-2xl border border-gray-200 p-8 mb-6">
+          <h2 className="text-xl font-bold mb-2">Here&apos;s what your Instagram could look like this week</h2>
+          <p className="text-gray-500 text-sm mb-6">We generated this from your listing photos — ready to post.</p>
+
+          {generatingLifestyle && (
+            <div className="flex items-center gap-4 p-8 bg-gray-50 rounded-xl">
+              <svg className="animate-spin h-6 w-6 text-green-500 flex-shrink-0" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              <div>
+                <p className="font-medium text-gray-700">Creating a lifestyle photo of your property...</p>
+                <p className="text-sm text-gray-400">Our AI is placing guests in your space — takes about 30 seconds</p>
+              </div>
+            </div>
+          )}
+
+          {lifestyleImage && (
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <img
+                  src={lifestyleImage}
+                  alt="AI-generated lifestyle photo of your property"
+                  className="w-full rounded-xl shadow-lg"
+                />
+              </div>
+              <div className="flex flex-col justify-center">
+                <p className="text-sm text-gray-500 uppercase tracking-wide font-medium mb-2">Ready-to-post caption</p>
+                <div className="bg-gray-50 rounded-xl p-4 mb-3">
+                  <p className="text-sm text-gray-700">{lifestyleCaption}</p>
+                  {lifestyleHashtags && (
+                    <p className="text-sm text-blue-500 mt-2">{lifestyleHashtags}</p>
+                  )}
+                </div>
+                <button
+                  onClick={() => navigator.clipboard.writeText(`${lifestyleCaption}\n\n${lifestyleHashtags}`)}
+                  className="self-start px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition"
+                >
+                  Copy caption + hashtags
+                </button>
+                <p className="text-sm text-gray-400 mt-4">
+                  Get 5 of these every week with captions, hashtags, and seasonal variations — all for $59/mo.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {!generatingLifestyle && !lifestyleImage && (
+            <div className="p-6 bg-gray-50 rounded-xl text-center">
+              <p className="text-gray-400 text-sm">Could not generate a preview this time. Subscribe to get weekly lifestyle content.</p>
+            </div>
+          )}
         </div>
 
         {/* Category Grades */}
