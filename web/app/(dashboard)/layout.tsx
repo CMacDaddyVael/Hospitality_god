@@ -1,29 +1,35 @@
-import { redirect } from "next/navigation";
-import { createServerClient } from "@/lib/supabase/server";
-import { Sidebar } from "@/components/layout/Sidebar";
-import { TopBar } from "@/components/layout/TopBar";
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
+import { DashboardNav } from '@/components/dashboard/DashboardNav'
+import { DashboardHeader } from '@/components/dashboard/DashboardHeader'
 
 export default async function DashboardLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
-  const supabase = await createServerClient();
+  const supabase = await createClient()
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+    error,
+  } = await supabase.auth.getUser()
 
-  if (!user) {
-    redirect("/login");
+  if (error || !user) {
+    redirect('/login')
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <Sidebar />
-      <div className="flex-1 flex flex-col min-w-0">
-        <TopBar user={user} />
-        <main className="flex-1 overflow-auto p-6">{children}</main>
+    <div className="flex h-screen bg-slate-950">
+      {/* Sidebar */}
+      <DashboardNav user={user} />
+
+      {/* Main content */}
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <DashboardHeader user={user} />
+        <main className="flex-1 overflow-y-auto bg-slate-950 p-6">
+          {children}
+        </main>
       </div>
     </div>
-  );
+  )
 }

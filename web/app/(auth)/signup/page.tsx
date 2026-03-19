@@ -1,24 +1,21 @@
-import { SignupForm } from "@/components/auth/SignupForm";
-import Link from "next/link";
+import type { Metadata } from 'next'
+import { LoginForm } from '@/components/auth/LoginForm'
 
+export const metadata: Metadata = {
+  title: 'Create Account',
+}
+
+// Signup uses the same magic link flow as login — Supabase handles new vs existing
 export default function SignupPage() {
   return (
-    <>
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Start your free trial</h2>
-        <p className="text-gray-500 text-sm mt-1">
-          No credit card required. Set up in 2 minutes.
+    <div className="w-full max-w-md">
+      <div className="mb-6 text-center">
+        <h2 className="text-2xl font-bold text-white">Create your account</h2>
+        <p className="mt-2 text-slate-400 text-sm">
+          Enter your email and we&apos;ll send you a magic link to get started.
         </p>
       </div>
-
-      <SignupForm />
-
-      <p className="text-center text-sm text-gray-500 mt-6">
-        Already have an account?{" "}
-        <Link href="/login" className="text-brand-600 font-medium hover:text-brand-700">
-          Sign in
-        </Link>
-      </p>
-    </>
-  );
+      <LoginForm isSignup />
+    </div>
+  )
 }
