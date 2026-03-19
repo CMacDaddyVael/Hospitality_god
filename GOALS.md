@@ -29,11 +29,17 @@ A hotel signs up, connects their accounts (Meta, Google Ads, GBP, email platform
 - Every tactic must be grounded in data and benchmarks
 - Do NOT contact leads yet — build the product first
 
+## Timeline
+- **April 2026:** Start selling. MVP must be live — onboarding, at least 2-3 execution channels working, landing page up.
+- **Q2 2026:** First 50 paying clients
+- **Q4 2026:** 300 clients
+- **2027:** Scale to 3,000
+
 ## Current State (March 2026)
 - [x] Knowledge base seeded (SEO/GEO, paid ads, content/social, industry trends)
-- [x] Automated research loop (GitHub Action, 3x daily)
+- [x] Automated research loop (GitHub Action, every 2 hours)
+- [x] Orchestrator agent (GitHub Action, every 4 hours)
 - [ ] Web search integration for live research (not just training data)
-- [ ] Orchestrator agent (autonomous task management)
 - [ ] Execution agent architecture
 - [ ] API integrations (Meta, Google, GBP, email, TikTok, GA4)
 - [ ] Client onboarding flow

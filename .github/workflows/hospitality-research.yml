@@ -2,10 +2,8 @@ name: Hospitality Marketing Research Loop
 
 on:
   schedule:
-    # 3x daily: midnight, 8am, 4pm EST (5am, 1pm, 9pm UTC)
-    - cron: '17 5 * * *'
-    - cron: '43 13 * * *'
-    - cron: '7 21 * * *'
+    # Every 2 hours, 12x daily
+    - cron: '17 */2 * * *'
   workflow_dispatch: # Manual trigger from GitHub UI
 
 permissions:
