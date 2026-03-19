@@ -2,6 +2,188 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: system-ui, -apple-system, sans-serif;
+/* ─── Base layer ─────────────────────────────────────────────────────────────── */
+@layer base {
+  :root {
+    --background: #0f172a;
+    --foreground: #f8fafc;
+  }
+
+  html {
+    @apply scroll-smooth antialiased;
+  }
+
+  body {
+    @apply bg-neutral-900 text-neutral-50 font-sans;
+    font-feature-settings: "cv11", "ss01";
+  }
+
+  /* Focus styles — accessible, on-brand */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-primary-400 ring-offset-2 ring-offset-neutral-900;
+  }
+
+  /* Selection color */
+  ::selection {
+    @apply bg-primary-400/30 text-white;
+  }
+
+  /* Headings default */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight text-neutral-50;
+  }
+
+  /* Smooth scrollbar on webkit */
+  ::-webkit-scrollbar {
+    @apply w-1.5;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-neutral-900;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-neutral-700 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-neutral-600;
+  }
+}
+
+/* ─── Component layer ─────────────────────────────────────────────────────────── */
+@layer components {
+  /* ── Buttons ─────────────────────────────────────────────────────────────── */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5
+           rounded-xl font-semibold text-sm
+           transition-all duration-200
+           disabled:opacity-50 disabled:cursor-not-allowed
+           focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-900;
+  }
+
+  .btn-primary {
+    @apply btn
+           bg-primary-500 hover:bg-primary-400 active:bg-primary-600
+           text-neutral-900
+           focus-visible:ring-primary-400
+           shadow-glow-gold hover:shadow-glow-gold;
+  }
+
+  .btn-secondary {
+    @apply btn
+           bg-neutral-800 hover:bg-neutral-700 active:bg-neutral-700
+           text-neutral-100 border border-neutral-700
+           focus-visible:ring-neutral-400;
+  }
+
+  .btn-ghost {
+    @apply btn
+           bg-transparent hover:bg-neutral-800/60
+           text-neutral-300 hover:text-neutral-100
+           focus-visible:ring-neutral-400;
+  }
+
+  .btn-accent {
+    @apply btn
+           bg-accent-500 hover:bg-accent-400 active:bg-accent-600
+           text-white
+           focus-visible:ring-accent-400
+           shadow-glow-teal;
+  }
+
+  .btn-lg {
+    @apply px-7 py-3.5 text-base rounded-2xl;
+  }
+
+  .btn-sm {
+    @apply px-3.5 py-1.5 text-xs rounded-lg;
+  }
+
+  /* ── Cards ───────────────────────────────────────────────────────────────── */
+  .card {
+    @apply bg-neutral-800/60 border border-neutral-700/60
+           rounded-2xl p-6 shadow-card
+           backdrop-blur-sm;
+  }
+
+  .card-hover {
+    @apply card transition-all duration-300
+           hover:border-neutral-600/80 hover:shadow-card-hover hover:-translate-y-0.5;
+  }
+
+  /* ── Form inputs ─────────────────────────────────────────────────────────── */
+  .input {
+    @apply w-full px-4 py-3
+           bg-neutral-900 border border-neutral-700
+           rounded-xl text-neutral-100 placeholder-neutral-500
+           text-sm
+           transition-colors duration-200
+           focus:outline-none focus:ring-2 focus:ring-primary-400/60 focus:border-primary-400/60
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .input-error {
+    @apply border-red-500/70 focus:ring-red-500/50 focus:border-red-500/70;
+  }
+
+  .label {
+    @apply block text-sm font-medium text-neutral-300 mb-1.5;
+  }
+
+  .error-message {
+    @apply text-xs text-red-400 mt-1.5;
+  }
+
+  /* ── Badges ──────────────────────────────────────────────────────────────── */
+  .badge {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5
+           rounded-full text-xs font-medium;
+  }
+
+  .badge-gold {
+    @apply badge bg-primary-500/20 text-primary-300 border border-primary-500/30;
+  }
+
+  .badge-teal {
+    @apply badge bg-accent-500/20 text-accent-300 border border-accent-500/30;
+  }
+
+  .badge-neutral {
+    @apply badge bg-neutral-700/60 text-neutral-300 border border-neutral-600/40;
+  }
+
+  /* ── Dividers ────────────────────────────────────────────────────────────── */
+  .divider {
+    @apply border-t border-neutral-800;
+  }
+
+  /* ── Section containers ──────────────────────────────────────────────────── */
+  .section {
+    @apply py-20 px-4;
+  }
+
+  .container-default {
+    @apply max-w-6xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+}
+
+/* ─── Utility layer ───────────────────────────────────────────────────────────── */
+@layer utilities {
+  .text-gradient-brand {
+    @apply bg-gradient-to-r from-primary-400 to-accent-400 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-gold {
+    @apply bg-gradient-to-r from-primary-300 to-primary-500 bg-clip-text text-transparent;
+  }
+
+  .bg-noise {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.4s ease-out;
+  }
 }
