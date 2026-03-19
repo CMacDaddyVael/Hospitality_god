@@ -7,7 +7,12 @@
     "research": "node scripts/hospitality-research.mjs",
     "orchestrate": "node scripts/orchestrator.mjs",
     "work": "node scripts/worker.mjs",
-    "dispatch": "node scripts/dispatcher.mjs"
+    "dispatch": "node scripts/dispatcher.mjs",
+    "exec:ceo": "EXEC_ROLE=ceo node scripts/executive.mjs",
+    "exec:cto": "EXEC_ROLE=cto node scripts/executive.mjs",
+    "exec:cpo": "EXEC_ROLE=cpo node scripts/executive.mjs",
+    "exec:cmo": "EXEC_ROLE=cmo node scripts/executive.mjs",
+    "exec:cro": "EXEC_ROLE=cro node scripts/executive.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0"

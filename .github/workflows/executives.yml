@@ -1,0 +1,112 @@
+name: Executive Team — C-Suite Strategy
+
+on:
+  schedule:
+    # Staggered so they read each other's memos
+    # CEO first (sets priorities), then others react
+    - cron: '11 */6 * * *'   # CEO: every 6 hrs
+    - cron: '22 1,7,13,19 * * *'  # CPO: 4x daily
+    - cron: '33 2,8,14,20 * * *'  # CTO: 4x daily
+    - cron: '44 3,9,15,21 * * *'  # CMO: 4x daily
+    - cron: '55 4,10,16,22 * * *' # CRO: 4x daily
+  workflow_dispatch:
+    inputs:
+      role:
+        description: 'Which executive to run (ceo, cto, cpo, cmo, cro, or "all")'
+        required: true
+        default: 'all'
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  ceo:
+    if: >
+      github.event_name == 'schedule' && contains(github.event.schedule, '11 */6')
+      || github.event_name == 'workflow_dispatch' && (github.event.inputs.role == 'ceo' || github.event.inputs.role == 'all')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm ci
+      - name: CEO Strategy Memo
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EXEC_ROLE: ceo
+        run: node scripts/executive.mjs
+
+  cpo:
+    if: >
+      github.event_name == 'schedule' && contains(github.event.schedule, '22 ')
+      || github.event_name == 'workflow_dispatch' && (github.event.inputs.role == 'cpo' || github.event.inputs.role == 'all')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm ci
+      - name: CPO Product Memo
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EXEC_ROLE: cpo
+        run: node scripts/executive.mjs
+
+  cto:
+    if: >
+      github.event_name == 'schedule' && contains(github.event.schedule, '33 ')
+      || github.event_name == 'workflow_dispatch' && (github.event.inputs.role == 'cto' || github.event.inputs.role == 'all')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm ci
+      - name: CTO Technical Memo
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EXEC_ROLE: cto
+        run: node scripts/executive.mjs
+
+  cmo:
+    if: >
+      github.event_name == 'schedule' && contains(github.event.schedule, '44 ')
+      || github.event_name == 'workflow_dispatch' && (github.event.inputs.role == 'cmo' || github.event.inputs.role == 'all')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm ci
+      - name: CMO Marketing Memo
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EXEC_ROLE: cmo
+        run: node scripts/executive.mjs
+
+  cro:
+    if: >
+      github.event_name == 'schedule' && contains(github.event.schedule, '55 ')
+      || github.event_name == 'workflow_dispatch' && (github.event.inputs.role == 'cro' || github.event.inputs.role == 'all')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm ci
+      - name: CRO Revenue Memo
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EXEC_ROLE: cro
+        run: node scripts/executive.mjs
