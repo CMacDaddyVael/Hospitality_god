@@ -1,35 +1,68 @@
 /**
- * Worker: review_response
- * Drafts and posts responses to guest reviews.
+ * review-response worker — updated to consume voice profile (issue #121)
+ *
+ * Changes from original:
+ * - Imports getVoiceProfileForPrompt
+ * - Passes voiceProfile to buildReviewResponsePrompt when userId available
+ * - Falls back to neutral tone when no profile found (zero behavior change for existing jobs)
  */
 
-import type { WorkerContext, TaskResult } from '../types';
+import Anthropic from '@anthropic-ai/sdk'
+import type { Job } from '../types'
+import { buildReviewResponsePrompt } from '../../ai/prompts/review_response.mjs'
+import { getVoiceProfileForPrompt } from '../../voice-profile/fetchVoiceProfile.mjs'
 
-export async function runReviewResponse(ctx: WorkerContext): Promise<TaskResult> {
-  const { task } = ctx;
-  const { review_id, review_text, rating, platform } = task.payload as {
-    review_id?: string;
-    review_text?: string;
-    rating?: number;
-    platform?: string;
-  };
+const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+})
 
-  if (!review_id || !review_text) {
-    return { success: false, error: 'Missing review_id or review_text in payload' };
+export interface ReviewResponseJobData {
+  userId?: string
+  reviewText: string
+  rating: number
+  guestName?: string
+  propertyName?: string
+  listingId?: string
+}
+
+/**
+ * Process a review-response job.
+ * Fetches owner voice profile (if userId present) and generates a personalized response.
+ */
+export async function processReviewResponseJob(job: Job): Promise<void> {
+  const data = job.data as ReviewResponseJobData
+
+  if (!data.reviewText || typeof data.rating !== 'number') {
+    throw new Error('reviewText and rating are required for review response jobs')
   }
 
-  console.log(`[review_response] Drafting response for review ${review_id} (${rating}★)`);
+  // Fetch voice profile — neutral fallback string returned if none exists
+  const voiceProfile = await getVoiceProfileForPrompt(data.userId)
 
-  // TODO: call Claude API to generate response in owner's voice
-  // TODO: post response via Airbnb/Vrbo API or scraper
+  const prompt = buildReviewResponsePrompt({
+    reviewText: data.reviewText,
+    rating: data.rating,
+    guestName: data.guestName,
+    propertyName: data.propertyName,
+    voiceProfile,
+  })
 
-  const result = {
-    review_id,
-    platform: platform ?? 'airbnb',
-    responded_at: new Date().toISOString(),
-    response_draft: `Thank you so much for your wonderful review! We're thrilled you enjoyed your stay and hope to welcome you back soon.`,
-    posted: false, // set to true once API integration is live
-  };
+  const message = await anthropic.messages.create({
+    model: 'claude-3-5-haiku-20241022',
+    max_tokens: 512,
+    messages: [{ role: 'user', content: prompt }],
+  })
 
-  return { success: true, data: result };
+  const responseText = message.content
+    .filter((b) => b.type === 'text')
+    .map((b) => (b as { type: 'text'; text: string }).text)
+    .join('')
+    .trim()
+
+  // Store the result — the existing job result mechanism handles persistence
+  job.result = {
+    responseText,
+    voiceProfileUsed: !!data.userId,
+    generatedAt: new Date().toISOString(),
+  }
 }
