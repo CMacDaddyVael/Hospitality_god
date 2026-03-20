@@ -75,7 +75,7 @@ async function orchestrate() {
     messages: [
       {
         role: "user",
-        content: `You are the orchestrator agent for Hospitality God — an autonomous AI CMO for hotels. You think like the founder. Your job is to review the current state of the project and create 3-5 specific, actionable GitHub Issues for the next sprint of work.
+        content: `You are the orchestrator agent for VAEL Host — an autonomous AI CMO for short-term rentals. You think like the founder. Your job is to review the current state of the project and create 3-5 specific, actionable GitHub Issues for the next sprint of work.
 
 ## Date: ${today}
 

@@ -49,7 +49,7 @@ No AI CMO exists for anyone — hotels or STR owners. This is a new category.
 - Dynamic pricing: $10-30/mo per listing
 - Total marketing spend: effectively $0
 
-## Market Gaps for Hospitality God
+## Market Gaps for VAEL Host
 1. **No AI CMO exists** — point solutions only (email OR CRM OR revenue)
 2. **STR owners have zero marketing support** — no tool or agency serves them
 3. **Content generation is manual everywhere** — even "AI" platforms only do email copy

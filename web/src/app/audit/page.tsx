@@ -149,7 +149,7 @@ export default function AuditPage() {
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-xl border-b border-stone-200 sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
-          <span className="text-base font-semibold tracking-tight text-stone-900">Hospitality God</span>
+          <span className="text-base font-semibold tracking-tight text-stone-900">VAEL Host</span>
           <a href="/" className="text-sm text-stone-500 hover:text-stone-900 transition">
             ← Audit another listing
           </a>

@@ -124,5 +124,5 @@ type: project
 | SEO/GEO | (none for STR) | **WIDE OPEN** |
 | Full marketing | (none for STR) | **WIDE OPEN — THIS IS US** |
 
-## Key Insight for Hospitality God
+## Key Insight for VAEL Host
 STR owners currently cobble together 4-6 separate tools (PMS + pricing + messaging + maybe StayFi). Nobody offers integrated marketing. The "full-stack CMO" that does listing optimization + review management + guest comms + social content + direct booking strategy is a completely empty market.

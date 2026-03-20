@@ -70,7 +70,7 @@ type: project
 - **Economic bifurcation** — high-income travelers spending freely; lower-income pulling back due to inflation
 - **Market outlook** — cautious optimism, stability or modest growth in ADR/demand/revenue/occupancy
 
-## Implications for Hospitality God
+## Implications for VAEL Host
 
 1. **Airbnb's 15.5% fee makes direct bookings even more compelling** — our direct booking website feature saves hosts 12-15% per booking
 2. **Algorithm now rewards content quality** — our listing optimization engine directly improves ranking

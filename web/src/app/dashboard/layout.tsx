@@ -24,10 +24,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="h-16 flex items-center px-5">
           <Link href="/" className="group flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-sm">
-              <span className="text-white text-xs font-bold">H</span>
+              <span className="text-white text-xs font-bold">V</span>
             </div>
             <span className="text-[15px] font-heading font-semibold text-white/90 group-hover:text-white transition">
-              Hospitality God
+              VAEL Host
             </span>
           </Link>
         </div>
@@ -83,9 +83,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-md bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center">
-              <span className="text-white text-[9px] font-bold">H</span>
+              <span className="text-white text-[9px] font-bold">V</span>
             </div>
-            <span className="text-sm font-heading font-semibold text-white/90">Hospitality God</span>
+            <span className="text-sm font-heading font-semibold text-white/90">VAEL Host</span>
           </div>
           <span className="text-[10px] bg-brand-500/20 text-brand-300 px-2 py-0.5 rounded-full font-medium">Pro</span>
         </div>

@@ -116,7 +116,7 @@ async function work() {
     messages: [
       {
         role: "user",
-        content: `You are a senior software engineer working on Hospitality God — an autonomous AI CMO platform for hotels, resorts, boutiques, and vacation rentals.
+        content: `You are a senior software engineer working on VAEL Host — an autonomous AI CMO platform for short-term rental owners.
 
 ## Your task
 Implement the following GitHub Issue:

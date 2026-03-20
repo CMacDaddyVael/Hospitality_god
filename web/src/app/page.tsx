@@ -227,10 +227,10 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-sm">
-              <span className="text-white text-sm font-bold">H</span>
+              <span className="text-white text-sm font-bold">V</span>
             </div>
             <span className="text-[17px] font-heading font-semibold tracking-tight text-stone-900">
-              Hospitality God
+              VAEL Host
             </span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm text-stone-500">
@@ -578,10 +578,10 @@ export default function LandingPage() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-2.5">
               <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center">
-                <span className="text-white text-xs font-bold">H</span>
+                <span className="text-white text-xs font-bold">V</span>
               </div>
               <span className="text-sm font-heading font-semibold text-white/60">
-                Hospitality God
+                VAEL Host
               </span>
             </div>
             <div className="flex items-center gap-8 text-sm text-white/30">
@@ -597,10 +597,10 @@ export default function LandingPage() {
               >
                 Pricing
               </a>
-              <span>hello@hospitalitygod.com</span>
+              <span>hello@vaelhost.com</span>
             </div>
             <span className="text-sm text-white/20">
-              &copy; 2026 Hospitality God
+              &copy; 2026 VAEL Host
             </span>
           </div>
         </div>

@@ -1,4 +1,4 @@
-# Hospitality God — Vision & Goals
+# VAEL Host — Vision & Goals
 
 ## Mission
 **"CMO in a Box" for short-term rental owners.** An AI marketing team that:

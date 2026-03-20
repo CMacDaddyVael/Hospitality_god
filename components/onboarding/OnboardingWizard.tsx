@@ -192,9 +192,9 @@ export function OnboardingWizard() {
       <header className="px-6 py-4 flex items-center justify-between border-b border-slate-700/50">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
-            <span className="text-slate-900 font-bold text-sm">HG</span>
+            <span className="text-slate-900 font-bold text-sm">VH</span>
           </div>
-          <span className="text-white font-semibold">Hospitality God</span>
+          <span className="text-white font-semibold">VAEL Host</span>
         </div>
         <div className="text-slate-400 text-sm">
           Step {currentStep} of {STEPS.length}
