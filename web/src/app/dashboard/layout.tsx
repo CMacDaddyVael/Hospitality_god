@@ -17,18 +17,26 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
 
   return (
-    <div className="min-h-screen bg-surface-subtle flex">
+    <div className="min-h-screen bg-[#FAF9F7] flex">
       {/* Sidebar */}
-      <aside className="hidden md:flex flex-col w-60 bg-white border-r border-stone-200 fixed inset-y-0 left-0 z-40">
+      <aside className="hidden md:flex flex-col w-[220px] bg-stone-950 fixed inset-y-0 left-0 z-40">
         {/* Logo */}
-        <div className="h-14 flex items-center px-5 border-b border-stone-200">
-          <Link href="/" className="text-base font-semibold tracking-tight text-stone-900">
-            Hospitality God
+        <div className="h-16 flex items-center px-5">
+          <Link href="/" className="group flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-sm">
+              <span className="text-white text-xs font-bold">H</span>
+            </div>
+            <span className="text-[15px] font-heading font-semibold text-white/90 group-hover:text-white transition">
+              Hospitality God
+            </span>
           </Link>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-3 py-4 space-y-1">
+        <nav className="flex-1 px-3 py-2 space-y-0.5">
+          <p className="px-3 pt-3 pb-2 text-[10px] font-medium text-white/30 uppercase tracking-[0.15em]">
+            Marketing
+          </p>
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
@@ -36,13 +44,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150 ${
                   isActive
-                    ? "bg-brand-50 text-brand-700 border-l-2 border-brand-500 -ml-[2px] pl-[14px]"
-                    : "text-stone-500 hover:text-stone-900 hover:bg-stone-50"
+                    ? "bg-white/10 text-white shadow-sm"
+                    : "text-white/50 hover:text-white/80 hover:bg-white/[0.05]"
                 }`}
               >
-                <Icon className={`w-4 h-4 ${isActive ? "text-brand-600" : "text-stone-400"}`} />
+                <Icon className={`w-[15px] h-[15px] ${isActive ? "text-brand-400" : "text-white/30"}`} />
                 {item.label}
               </Link>
             );
@@ -50,50 +58,55 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </nav>
 
         {/* Bottom */}
-        <div className="px-3 py-4 border-t border-stone-200">
+        <div className="px-3 py-3 border-t border-white/[0.06]">
           <Link
             href="/dashboard/settings"
-            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-stone-500 hover:text-stone-900 hover:bg-stone-50 transition-colors"
+            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-white/40 hover:text-white/70 hover:bg-white/[0.05] transition-all"
           >
-            <Settings className="w-4 h-4 text-stone-400" />
+            <Settings className="w-[15px] h-[15px]" />
             Settings
           </Link>
-          <div className="flex items-center gap-3 px-3 py-3 mt-2">
-            <div className="w-8 h-8 bg-stone-200 rounded-full flex items-center justify-center">
-              <span className="text-xs text-stone-500 font-medium">P</span>
+          <div className="flex items-center gap-2.5 px-3 py-3 mt-1">
+            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center">
+              <span className="text-[10px] text-white font-bold">P</span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-stone-900 truncate">Property Owner</p>
-              <p className="text-xs text-stone-400">Pro plan</p>
+              <p className="text-[12px] font-medium text-white/80 truncate">Property Owner</p>
+              <p className="text-[10px] text-white/30">Pro · $49/mo</p>
             </div>
           </div>
         </div>
       </aside>
 
       {/* Mobile top bar */}
-      <header className="md:hidden fixed top-0 w-full z-40 bg-white/80 backdrop-blur-xl border-b border-stone-200">
+      <header className="md:hidden fixed top-0 w-full z-40 bg-stone-950/95 backdrop-blur-xl border-b border-white/[0.06]">
         <div className="px-4 h-14 flex items-center justify-between">
-          <span className="text-base font-semibold tracking-tight text-stone-900">Hospitality God</span>
-          <span className="text-xs bg-brand-50 text-brand-700 px-2 py-1 rounded-full font-medium">Pro</span>
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center">
+              <span className="text-white text-[9px] font-bold">H</span>
+            </div>
+            <span className="text-sm font-heading font-semibold text-white/90">Hospitality God</span>
+          </div>
+          <span className="text-[10px] bg-brand-500/20 text-brand-300 px-2 py-0.5 rounded-full font-medium">Pro</span>
         </div>
       </header>
 
       {/* Mobile bottom tabs */}
-      <nav className="md:hidden fixed bottom-0 w-full z-40 bg-white border-t border-stone-200">
+      <nav className="md:hidden fixed bottom-0 w-full z-40 bg-stone-950 border-t border-white/[0.06] safe-area-bottom">
         <div className="flex">
-          {navItems.map((item) => {
+          {navItems.slice(0, 5).map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex-1 flex flex-col items-center gap-1 py-2.5 transition-colors ${
-                  isActive ? "text-brand-600" : "text-stone-400"
+                className={`flex-1 flex flex-col items-center gap-0.5 py-2 transition-colors ${
+                  isActive ? "text-brand-400" : "text-white/30"
                 }`}
               >
-                <Icon className="w-5 h-5" />
-                <span className="text-[10px] font-medium">{item.label}</span>
+                <Icon className="w-[18px] h-[18px]" />
+                <span className="text-[9px] font-medium">{item.label}</span>
               </Link>
             );
           })}
@@ -101,8 +114,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </nav>
 
       {/* Main content */}
-      <main className="flex-1 md:ml-60 min-h-screen">
-        <div className="max-w-5xl mx-auto px-6 py-8 md:py-10 mt-14 md:mt-0 mb-20 md:mb-0">
+      <main className="flex-1 md:ml-[220px] min-h-screen">
+        <div className="max-w-5xl mx-auto px-6 lg:px-8 py-8 md:py-10 mt-14 md:mt-0 mb-20 md:mb-0">
           {children}
         </div>
       </main>

@@ -17,11 +17,32 @@ interface MarketInsight {
   source: string;
 }
 
+interface Competitor {
+  name: string;
+  url: string;
+  strengths: string[];
+  weaknesses: string[];
+  price: string;
+  rating: string;
+  reviews: string;
+  keyDifference: string;
+}
+
+interface HeadToHead {
+  title: { user: string; bestCompetitor: string; verdict: string };
+  photos: { user: string; competitors: string; verdict: string };
+  amenities: { userMissing: string[]; userAdvantage: string[] };
+  reviews: { user: string; competitors: string; verdict: string };
+  pricing: { user: string; competitors: string; verdict: string };
+}
+
 interface CompetitorData {
   location: string;
   propertyType: string;
   priceRange: string;
+  competitors: Competitor[];
   alerts: Alert[];
+  headToHead: HeadToHead;
   strengths: string[];
   weaknesses: string[];
   marketInsights: MarketInsight[];
@@ -185,6 +206,107 @@ export default function CompetitorsPage() {
               })}
             </div>
           </div>
+
+          {/* Competitor Cards */}
+          {data.competitors && data.competitors.length > 0 && (
+            <div>
+              <h2 className="text-lg font-semibold tracking-tight text-stone-900 mb-4">Nearby Competitors</h2>
+              <div className="space-y-3">
+                {data.competitors.map((comp, i) => (
+                  <div key={i} className="bg-white rounded-xl border border-stone-200 p-5">
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <h3 className="font-semibold text-stone-900">{comp.name}</h3>
+                        <a href={comp.url} target="_blank" rel="noopener noreferrer" className="text-xs text-brand-600 hover:text-brand-700 transition">
+                          View listing →
+                        </a>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-mono font-semibold text-stone-900">{comp.price}</p>
+                        <p className="text-xs text-stone-400">{comp.rating} ({comp.reviews} reviews)</p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-stone-600 mb-3 italic">{comp.keyDifference}</p>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-xs font-medium text-red-600 mb-1.5">They beat you on:</p>
+                        {comp.strengths.map((s, j) => (
+                          <p key={j} className="text-xs text-stone-500 flex items-start gap-1.5 mb-1">
+                            <span className="text-red-400 mt-0.5">−</span>{s}
+                          </p>
+                        ))}
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-emerald-600 mb-1.5">You beat them on:</p>
+                        {comp.weaknesses.map((w, j) => (
+                          <p key={j} className="text-xs text-stone-500 flex items-start gap-1.5 mb-1">
+                            <span className="text-emerald-400 mt-0.5">+</span>{w}
+                          </p>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Head to Head */}
+          {data.headToHead && (
+            <div className="bg-white rounded-xl border border-stone-200 p-6">
+              <h2 className="text-lg font-semibold tracking-tight text-stone-900 mb-4">Head-to-Head</h2>
+              <div className="space-y-4">
+                {[
+                  { label: "Title", data: data.headToHead.title },
+                  { label: "Photos", data: data.headToHead.photos },
+                  { label: "Reviews", data: data.headToHead.reviews },
+                  { label: "Pricing", data: data.headToHead.pricing },
+                ].map((item) => (
+                  <div key={item.label} className="border-b border-stone-100 pb-4 last:border-0 last:pb-0">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-stone-700">{item.label}</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 mb-2">
+                      <div className="bg-brand-50 rounded-lg p-3">
+                        <p className="text-[10px] font-medium text-brand-600 uppercase tracking-wide mb-1">You</p>
+                        <p className="text-xs text-stone-700">{item.data.user}</p>
+                      </div>
+                      <div className="bg-stone-50 rounded-lg p-3">
+                        <p className="text-[10px] font-medium text-stone-400 uppercase tracking-wide mb-1">Competitors</p>
+                        <p className="text-xs text-stone-700">{"bestCompetitor" in item.data ? item.data.bestCompetitor : ("competitors" in item.data ? item.data.competitors : "")}</p>
+                      </div>
+                    </div>
+                    <p className="text-xs text-stone-500">{item.data.verdict}</p>
+                  </div>
+                ))}
+
+                {/* Amenity Gap */}
+                {data.headToHead.amenities && (
+                  <div className="pt-2">
+                    <span className="text-sm font-medium text-stone-700">Amenity Gap</span>
+                    <div className="grid grid-cols-2 gap-4 mt-2">
+                      <div>
+                        <p className="text-[10px] font-medium text-red-600 uppercase tracking-wide mb-2">You're missing</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {data.headToHead.amenities.userMissing?.map((a, i) => (
+                            <span key={i} className="text-xs bg-red-50 text-red-700 px-2 py-0.5 rounded-md">{a}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-medium text-emerald-600 uppercase tracking-wide mb-2">Your advantage</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {data.headToHead.amenities.userAdvantage?.map((a, i) => (
+                            <span key={i} className="text-xs bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-md">{a}</span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Strengths & Weaknesses */}
           <div className="grid md:grid-cols-2 gap-6">

@@ -7,7 +7,8 @@ const config: Config = {
     extend: {
       fontFamily: {
         sans: ["Inter", "system-ui", "-apple-system", "sans-serif"],
-        mono: ["JetBrains Mono", "monospace"],
+        heading: ["DM Sans", "Inter", "system-ui", "sans-serif"],
+        mono: ["JetBrains Mono", "SF Mono", "monospace"],
       },
       colors: {
         brand: {
