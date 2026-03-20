@@ -91,6 +91,45 @@ function isPropertyPhoto(url: string): boolean {
   ];
   if (junkPathSegments.some(seg => url.includes(seg))) return false;
 
+  // Filter out host/people photos — these are typically in /users/ or have "User" in path
+  // Also filter editorial/marketing images from Airbnb's content team
+  const peoplePatterns = [
+    /\/User/i,
+    /\/host/i,
+    /\/person/i,
+    /\/portrait/i,
+    /\/headshot/i,
+    /\/team/i,
+    /\/staff/i,
+    /\/editorial/i,
+    /\/marketing/i,
+    /\/brand/i,
+    /\/lifestyle/i,
+    /\/graphic/i,
+    /\/illustration/i,
+    /\/infographic/i,
+    /\/banner/i,
+    /\/hero/i,
+    /\/promo/i,
+    /\/campaign/i,
+  ];
+  if (peoplePatterns.some(p => p.test(url))) return false;
+
+  // Property listing photos on Airbnb must contain "Hosting-" in the path
+  // This is the strongest signal — real listing photos use paths like:
+  //   /im/pictures/miso/Hosting-12345/original/...
+  //   /im/pictures/prohost-api/Hosting-12345/original/...
+  //   /im/pictures/hosting/Hosting-12345/original/...
+  // Non-property images (people, graphics, editorial) do NOT have "Hosting-"
+  const isAirbnbCdn = /muscache\.com/i.test(url);
+  if (isAirbnbCdn) {
+    const hasHostingPath = /Hosting-\d+/i.test(url);
+    const hasMediaPath = /\/im\/pictures\//i.test(url) || /\/4ea\/air\/v2\/pictures\//i.test(url);
+    // If it's from the Airbnb CDN, require "Hosting-" in the path
+    // This is the single best filter for property-only images
+    if (hasMediaPath && !hasHostingPath) return false;
+  }
+
   return true;
 }
 
