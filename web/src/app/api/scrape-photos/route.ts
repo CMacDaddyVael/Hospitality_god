@@ -36,6 +36,14 @@ const EXCLUDE_PATTERNS = [
   /pixel/i,
   /tracking/i,
   /analytics/i,
+  /AirbnbPlatformAssets/i,
+  /search[-_]?bar/i,
+  /navigation/i,
+  /category/i,
+  /experiences/i,
+  /im_w=\d{1,2}(?:&|$)/,  // very small images (im_w=32, im_w=48, etc.)
+  /\/original\/\w{8,}-\w{4}-/i,  // short UUIDs that are typically icons
+  /airbnb-platform/i,
 ];
 
 /* ─── Patterns to INCLUDE (property photo CDN) ─── */
@@ -55,7 +63,35 @@ function isPropertyPhoto(url: string): boolean {
 
   // Must not match any exclude pattern
   const excluded = EXCLUDE_PATTERNS.some((p) => p.test(url));
-  return !excluded;
+  if (excluded) return false;
+
+  // Additional filters for Airbnb junk:
+  // - Category/amenity illustrations (small, square, often PNG with transparency)
+  // - Host profile photos (in /users/ path)
+  // - Airbnb platform UI assets
+  // - Images with very short paths (usually icons)
+  const path = url.split("?")[0];
+
+  // Property photos on Airbnb always have a UUID or long hash in the path
+  // e.g. /im/pictures/miso/Hosting-81025612/original/...
+  // e.g. /im/pictures/prohost-api/Hosting-12345/original/...
+  // Junk images tend to have short paths or category keywords
+  const hasLongPath = path.split("/").filter(s => s.length > 0).length >= 5;
+  if (!hasLongPath) return false;
+
+  // Filter out Airbnb's illustration/icon images which contain these path segments
+  const junkPathSegments = [
+    "AirbnbPlatformAssets",
+    "category",
+    "amenities",
+    "experiences",
+    "airbnb-platform-assets",
+    "search-bar",
+    "navigation",
+  ];
+  if (junkPathSegments.some(seg => url.includes(seg))) return false;
+
+  return true;
 }
 
 /**
