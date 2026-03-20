@@ -58,7 +58,7 @@ async function work() {
     let issues;
     try {
       issues = JSON.parse(
-        run('gh issue list --state open --limit 5 --json number,title,body,labels --sort created --order asc')
+        run('gh issue list --state open --limit 5 --json number,title,body,labels')
       );
     } catch (err) {
       console.log("No open issues or gh not available:", err.message);
