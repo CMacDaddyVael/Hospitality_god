@@ -1,8 +1,9 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { readFileSync, readdirSync } from "fs";
+import { readFileSync, readdirSync, writeFileSync, unlinkSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
-import { execSync } from "child_process";
+import { execSync, execFileSync } from "child_process";
+import { tmpdir } from "os";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "..");
@@ -152,23 +153,21 @@ Rules:
       : [];
     const body = bodyMatch[1].trim();
 
-    // Create the issue via gh CLI
+    // Create the issue via gh CLI using a temp file to avoid shell escaping issues
     try {
-      const labelArgs = labels.map((l) => `--label "${l}"`).join(" ");
-      const cmd = `gh issue create --title "${title.replace(/"/g, '\\"')}" --body "${body.replace(/"/g, '\\"').replace(/\n/g, "\\n")}" ${labelArgs} 2>&1 || echo "Label may not exist, creating without labels" && gh issue create --title "${title.replace(/"/g, '\\"')}" --body "${body.replace(/"/g, '\\"').replace(/\n/g, "\\n")}" 2>&1`;
+      const fullBody = `${body}\n\n---\n*Created by Orchestrator Agent on ${today}*`;
+      const tmpFile = join(tmpdir(), `hg-issue-${Date.now()}.md`);
+      writeFileSync(tmpFile, fullBody, "utf-8");
 
-      // Simpler approach - just create without labels if they don't exist
-      const simpleCmd = `gh issue create --title "${title.replace(/"/g, '\\"')}" --body "$(cat <<'GHEOF'
-${body}
-
----
-*Created by Orchestrator Agent on ${today}*
-GHEOF
-)"`;
-
-      const output = execSync(simpleCmd, { cwd: ROOT, encoding: "utf-8" });
+      const output = execFileSync("gh", [
+        "issue", "create",
+        "--title", title,
+        "--body-file", tmpFile,
+      ], { cwd: ROOT, encoding: "utf-8" });
       console.log(`Created issue: ${title}`);
       console.log(`  → ${output.trim()}`);
+
+      unlinkSync(tmpFile);
     } catch (err) {
       console.error(`Failed to create issue "${title}": ${err.message}`);
     }

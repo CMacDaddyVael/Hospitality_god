@@ -268,6 +268,18 @@ export default function PhotoStudioPage() {
               <span className="ml-1 text-yellow-500">★{favoriteCount}</span>
             )}
           </button>
+          <button
+            onClick={() => {
+              localStorage.removeItem("hg_listing_photos");
+              setListingPhotos([]);
+              setSelectedPhotoUrl(null);
+              setStep("loading");
+              window.location.reload();
+            }}
+            className="px-4 py-2 rounded-lg text-sm font-medium bg-white border border-stone-200 text-stone-600 hover:bg-stone-50 transition"
+          >
+            Refresh photos
+          </button>
         </div>
       </div>
 

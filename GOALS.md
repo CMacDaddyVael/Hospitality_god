@@ -1,7 +1,16 @@
 # Hospitality God — Vision & Goals
 
 ## Mission
-AI marketing team for short-term rental owners. The swarm analyzes your listings, socials, and reviews daily — then tells you exactly what to do and creates the content for you. You just copy-paste and post.
+**"CMO in a Box" for short-term rental owners.** An AI marketing team that:
+- Creates automated lifestyle images for listings
+- Regularly checks competitors and market positioning
+- Analyzes listing performance and optimization opportunities
+- Creates social posts and captions ready to publish
+- Improves conversion for their listings
+- Generates review responses in the owner's voice
+- Produces seasonal content updates
+
+The swarm analyzes your listings, socials, and reviews daily — then tells you exactly what to do and creates the content for you. You just copy-paste and post.
 
 ## How It Works (User Experience)
 
