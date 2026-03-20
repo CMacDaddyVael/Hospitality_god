@@ -71,8 +71,8 @@ const JUNK_PATH_SEGMENTS = [
 
 /* ─── People/editorial patterns ─── */
 const PEOPLE_PATTERNS = [
-  /\/User/i,
-  /\/host/i,
+  /\/User[-\/]/i,
+  /\/host[-\/](?!ing)/i,
   /\/portrait/i,
   /\/headshot/i,
   /\/editorial/i,
