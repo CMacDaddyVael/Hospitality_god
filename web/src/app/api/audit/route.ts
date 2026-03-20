@@ -1,179 +1,161 @@
-import { NextRequest, NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
-import { FirecrawlClient } from "@mendable/firecrawl-js";
-import { filterPropertyPhotos } from "@/lib/photo-filter";
+import { NextRequest, NextResponse } from 'next/server'
+import { scrapeAirbnbListing } from '@/lib/audit/scraper'
+import { scoreListingAudit } from '@/lib/audit/scorer'
+import { generateAuditSummary } from '@/lib/audit/claude-summary'
+import { persistAuditRecord } from '@/lib/audit/db'
+import { checkRateLimit } from '@/lib/audit/rate-limit'
 
-export const maxDuration = 60;
+export const maxDuration = 30 // Vercel max duration in seconds
 
-export async function POST(req: NextRequest) {
-  try {
-    const { url } = await req.json();
-
-    if (!url || typeof url !== "string") {
-      return NextResponse.json({ error: "URL is required" }, { status: 400 });
-    }
-
-    // Scrape with Firecrawl
-    const firecrawl = new FirecrawlClient({
-      apiKey: process.env.FIRECRAWL_API_KEY!,
-    });
-
-    console.log("Scraping:", url);
-    const scrapeResult = await firecrawl.scrape(url, {
-      formats: ["markdown"],
-      waitFor: 5000,
-    });
-
-    const markdown = (scrapeResult.markdown || "").slice(0, 12000);
-    const metadata = (scrapeResult.metadata || {}) as Record<string, string>;
-
-    if (!markdown || markdown.length < 100) {
-      console.error("Firecrawl returned too little content:", markdown.length);
-      return NextResponse.json(
-        { error: "Could not read that listing. Please check the URL and try again." },
-        { status: 400 }
-      );
-    }
-
-    console.log("Scraped", markdown.length, "chars of markdown");
-
-    const scrapedContent = `
-URL: ${url}
-Page Title: ${metadata.title || ""}
-Meta Description: ${metadata.description || ""}
-OG Image: ${metadata.ogImage || ""}
-Status Code: ${metadata.statusCode || ""}
-
-Page Content (markdown):
-${markdown}
-    `.trim();
-
-    console.log("Scraped content length:", scrapedContent.length);
-
-    // Extract listing photos from markdown — use shared strict filter
-    const photoRegex = /https:\/\/a0\.muscache\.com\/[^\s)"\]]+/g;
-    const rawPhotoUrls = [...new Set(markdown.match(photoRegex) || [])];
-    const listingPhotos = filterPropertyPhotos(rawPhotoUrls);
-    console.log("Found", listingPhotos.length, "property photos (filtered from", rawPhotoUrls.length, "raw URLs)");
-
-    // Analyze with Claude
-    const client = new Anthropic();
-
-    console.log("Calling Claude...");
-    const response = await client.messages.create({
-      model: "claude-sonnet-4-6",
-      max_tokens: 8192,
-      messages: [
-        {
-          role: "user",
-          content: `You are an expert STR (short-term rental) marketing analyst. Analyze this Airbnb/Vrbo listing page and produce a detailed audit.
-
-## Scraped Listing Data:
-${scrapedContent}
-
-## Produce a JSON audit report with this exact structure:
-{
-  "property_name": "name of the property",
-  "overall_score": 0-100,
-  "summary": "2-3 sentence executive summary of the listing's marketing health",
-  "categories": [
-    {
-      "name": "Title & Description",
-      "grade": "A/B/C/D/F",
-      "score": 0-100,
-      "findings": ["specific finding 1", "specific finding 2"],
-      "recommendations": ["specific actionable fix 1", "specific actionable fix 2"]
-    },
-    {
-      "name": "Photography",
-      "grade": "A/B/C/D/F",
-      "score": 0-100,
-      "findings": ["..."],
-      "recommendations": ["..."]
-    },
-    {
-      "name": "SEO & Discoverability",
-      "grade": "A/B/C/D/F",
-      "score": 0-100,
-      "findings": ["..."],
-      "recommendations": ["..."]
-    },
-    {
-      "name": "Reviews & Social Proof",
-      "grade": "A/B/C/D/F",
-      "score": 0-100,
-      "findings": ["..."],
-      "recommendations": ["..."]
-    },
-    {
-      "name": "Competitive Positioning",
-      "grade": "A/B/C/D/F",
-      "score": 0-100,
-      "findings": ["..."],
-      "recommendations": ["..."]
-    },
-    {
-      "name": "Conversion & Booking Flow",
-      "grade": "A/B/C/D/F",
-      "score": 0-100,
-      "findings": ["..."],
-      "recommendations": ["..."]
-    }
-  ],
-  "top_5_fixes": [
-    {
-      "priority": 1,
-      "title": "short title",
-      "description": "what to do and why",
-      "impact": "estimated impact (e.g., '15-25% more visibility')"
-    }
-  ],
-  "optimized_title": "a rewritten, optimized listing title",
-  "optimized_description_preview": "first 2-3 sentences of an optimized description"
+function getClientIp(req: NextRequest): string {
+  return (
+    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    req.headers.get('x-real-ip') ||
+    '127.0.0.1'
+  )
 }
 
-Be specific and actionable. Reference actual content from the listing. Don't be generic.
-Keep each findings and recommendations array to 2-3 items max. Keep descriptions concise (1-2 sentences each).
-
-IMPORTANT: Return ONLY valid JSON. No markdown, no code fences, no explanation.`,
-        },
-      ],
-    });
-
-    const text =
-      response.content[0].type === "text" ? response.content[0].text : "";
-    console.log("Claude response length:", text.length);
-
-    // Parse the JSON response
-    let audit;
-    try {
-      const cleaned = text
-        .replace(/```json\n?/g, "")
-        .replace(/```\n?/g, "")
-        .trim();
-      audit = JSON.parse(cleaned);
-    } catch (parseErr) {
-      console.error("JSON parse error:", parseErr);
-      console.error("Raw response:", text.slice(0, 500));
-      return NextResponse.json(
-        { error: "Failed to parse audit results. Please try again." },
-        { status: 500 }
-      );
-    }
-
-    console.log("Audit complete. Score:", audit.overall_score);
-    return NextResponse.json({
-      audit,
-      url,
-      listingPhotos: listingPhotos.slice(0, 20),
-      propertyDescription: metadata.description || metadata.ogDescription || "",
-    });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    console.error("Audit error:", message);
-    return NextResponse.json(
-      { error: `Audit failed: ${message}` },
-      { status: 500 }
-    );
+function isValidListingUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url)
+    const isAirbnb =
+      parsed.hostname.includes('airbnb.com') &&
+      (parsed.pathname.includes('/rooms/') || parsed.pathname.includes('/h/'))
+    const isVrbo =
+      parsed.hostname.includes('vrbo.com') || parsed.hostname.includes('homeaway.com')
+    return isAirbnb || isVrbo
+  } catch {
+    return false
   }
+}
+
+export async function POST(req: NextRequest) {
+  // ── 1. Parse & validate input ──────────────────────────────────────────────
+  let body: { url?: string }
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json(
+      { error: 'invalid_request', message: 'Request body must be valid JSON' },
+      { status: 400 }
+    )
+  }
+
+  const { url } = body
+
+  if (!url || typeof url !== 'string' || url.trim() === '') {
+    return NextResponse.json(
+      { error: 'invalid_request', message: 'url is required' },
+      { status: 400 }
+    )
+  }
+
+  const trimmedUrl = url.trim()
+
+  if (!isValidListingUrl(trimmedUrl)) {
+    return NextResponse.json(
+      {
+        error: 'invalid_url',
+        message: 'URL must be a valid Airbnb (/rooms/ or /h/) or Vrbo listing URL',
+      },
+      { status: 400 }
+    )
+  }
+
+  // ── 2. Rate limiting ───────────────────────────────────────────────────────
+  const ip = getClientIp(req)
+  const rateLimitResult = await checkRateLimit(ip)
+
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      {
+        error: 'rate_limited',
+        message: `Too many audits. You can run 3 audits per hour. Try again in ${rateLimitResult.retryAfterSeconds}s.`,
+        retryAfter: rateLimitResult.retryAfterSeconds,
+      },
+      {
+        status: 429,
+        headers: {
+          'Retry-After': String(rateLimitResult.retryAfterSeconds),
+          'X-RateLimit-Limit': '3',
+          'X-RateLimit-Remaining': String(rateLimitResult.remaining),
+        },
+      }
+    )
+  }
+
+  // ── 3. Scrape ──────────────────────────────────────────────────────────────
+  let listingData
+  try {
+    listingData = await scrapeAirbnbListing(trimmedUrl)
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error('[audit] scrape failed:', msg)
+
+    if (msg.includes('not_found') || msg.includes('404')) {
+      return NextResponse.json({ error: 'listing_not_found' }, { status: 404 })
+    }
+    if (msg.includes('blocked') || msg.includes('captcha') || msg.includes('403')) {
+      return NextResponse.json({ error: 'scrape_blocked' }, { status: 503 })
+    }
+    return NextResponse.json(
+      { error: 'scrape_failed', message: 'Could not retrieve listing data' },
+      { status: 502 }
+    )
+  }
+
+  if (!listingData) {
+    return NextResponse.json({ error: 'listing_not_found' }, { status: 404 })
+  }
+
+  // ── 4. Score ───────────────────────────────────────────────────────────────
+  let auditScore
+  try {
+    auditScore = scoreListingAudit(listingData)
+  } catch (err: unknown) {
+    console.error('[audit] scoring failed:', err)
+    return NextResponse.json({ error: 'score_failed' }, { status: 500 })
+  }
+
+  // ── 5. Claude summary ──────────────────────────────────────────────────────
+  let summaryResult
+  try {
+    summaryResult = await generateAuditSummary(listingData, auditScore)
+  } catch (err: unknown) {
+    console.error('[audit] Claude summary failed:', err)
+    // Non-fatal — we can still return score without summary
+    summaryResult = {
+      summary: `Your listing scored ${auditScore.total}/100. There are key improvements that could significantly increase your revenue.`,
+      priorityFixes: auditScore.topIssues.slice(0, 3).map((i) => i.description),
+    }
+  }
+
+  // ── 6. Persist to Supabase ─────────────────────────────────────────────────
+  const scrapedAt = new Date().toISOString()
+  let auditId: string
+  try {
+    auditId = await persistAuditRecord({
+      url: trimmedUrl,
+      score: auditScore,
+      summary: summaryResult.summary,
+      priorityFixes: summaryResult.priorityFixes,
+      rawData: listingData,
+      scrapedAt,
+      ip,
+    })
+  } catch (err: unknown) {
+    console.error('[audit] DB persist failed:', err)
+    // Still return the result even if persistence fails — don't punish the user
+    auditId = `ephemeral_${Date.now()}`
+  }
+
+  // ── 7. Return result ───────────────────────────────────────────────────────
+  return NextResponse.json({
+    auditId,
+    url: trimmedUrl,
+    score: auditScore,
+    summary: summaryResult.summary,
+    priorityFixes: summaryResult.priorityFixes,
+    scrapedAt,
+  })
 }
