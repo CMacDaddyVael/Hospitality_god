@@ -202,11 +202,12 @@ Rules:
     return;
   }
 
-  // Create branch
+  // Create branch with timestamp to avoid conflicts with existing branches
+  const timestamp = Date.now().toString(36);
   const branchName = `worker/issue-${issue.number}-${issue.title
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
-    .slice(0, 40)}`;
+    .slice(0, 40)}-${timestamp}`;
 
   run(`git checkout -b "${branchName}"`);
 

@@ -230,11 +230,38 @@ export default function DeliverablesPage() {
       let propertyDescription = "";
       let listingUrl = "";
 
+      let auditFindings = "";
+
       if (auditData) {
         const parsed = JSON.parse(auditData);
         propertyName = parsed.audit?.property_name || "";
-        propertyDescription = parsed.audit?.summary || "";
+        propertyDescription = parsed.propertyDescription || parsed.audit?.summary || "";
         listingUrl = parsed.url || "";
+
+        // Build rich property context from the full audit
+        const audit = parsed.audit;
+        if (audit) {
+          const categoryDetails = (audit.categories || [])
+            .map((c: { name: string; findings: string[]; recommendations: string[] }) =>
+              `${c.name}: ${(c.findings || []).join("; ")}`
+            )
+            .join("\n");
+
+          const topFixes = (audit.top_5_fixes || [])
+            .map((f: { priority: number; title: string; description: string }) =>
+              `${f.priority}. ${f.title}: ${f.description}`
+            )
+            .join("\n");
+
+          auditFindings = `\nAUDIT FINDINGS:\n${categoryDetails}\n\nTOP FIXES:\n${topFixes}`;
+
+          if (audit.optimized_title) {
+            auditFindings += `\nOPTIMIZED TITLE: ${audit.optimized_title}`;
+          }
+          if (audit.optimized_description_preview) {
+            auditFindings += `\nOPTIMIZED DESCRIPTION: ${audit.optimized_description_preview}`;
+          }
+        }
       }
 
       const res = await fetch("/api/daily-content", {
@@ -244,6 +271,7 @@ export default function DeliverablesPage() {
           propertyName,
           propertyDescription,
           listingUrl,
+          auditFindings,
         }),
       });
 

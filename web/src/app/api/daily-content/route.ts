@@ -30,7 +30,7 @@ const CURRENT_SEASON = (() => {
 
 export async function POST(req: NextRequest) {
   try {
-    const { propertyName, propertyDescription, listingUrl, recentReviews, lastPostDate } = await req.json();
+    const { propertyName, propertyDescription, listingUrl, recentReviews, lastPostDate, auditFindings } = await req.json();
 
     const client = new Anthropic();
 
@@ -49,6 +49,9 @@ CURRENT MONTH: ${CURRENT_MONTH}
 CURRENT SEASON: ${CURRENT_SEASON}
 RECENT REVIEWS TO RESPOND TO: ${recentReviews || "None provided"}
 LAST SOCIAL POST: ${lastPostDate || "Unknown"}
+${auditFindings || ""}
+
+CRITICAL: Every piece of content MUST be specific to THIS property. Reference its actual name, location, amenities, unique features, and audit findings. Do NOT generate generic vacation rental content. If the property has a hot tub, mention THAT hot tub. If it's in the mountains, reference THAT mountain town. Every caption should make it obvious which property this is about.
 
 Generate a JSON content plan with exactly 5 deliverables for this week. Mix of types.
 
