@@ -2,13 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Inbox, Camera, Shield, Settings } from "lucide-react";
+import { Home, Inbox, Camera, Shield, Settings, Building2, TrendingUp } from "lucide-react";
 
 const navItems = [
   { href: "/dashboard", label: "Home", icon: Home },
   { href: "/dashboard/deliverables", label: "Inbox", icon: Inbox },
+  { href: "/dashboard/optimization", label: "Optimization", icon: TrendingUp },
   { href: "/dashboard/photos", label: "Photo Studio", icon: Camera },
   { href: "/dashboard/competitors", label: "Competitors", icon: Shield },
+  { href: "/dashboard/properties", label: "Properties", icon: Building2 },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
