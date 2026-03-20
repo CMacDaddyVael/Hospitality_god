@@ -24,26 +24,26 @@ interface GeneratedPhoto {
 }
 
 const SCENES = [
-  { id: "morning-coffee", label: "Morning Coffee", icon: "☕", desc: "Guest enjoying coffee with the view" },
-  { id: "couple-dinner", label: "Romantic Dinner", icon: "🍷", desc: "Couple cooking or dining together" },
-  { id: "friends-gathering", label: "Friends Hangout", icon: "🥂", desc: "Group relaxing, drinks and conversation" },
-  { id: "solo-reading", label: "Cozy Retreat", icon: "📖", desc: "Solo guest reading or relaxing" },
-  { id: "family-fun", label: "Family Time", icon: "👨‍👩‍👧‍👦", desc: "Family enjoying the space together" },
-  { id: "outdoor-lounge", label: "Outdoor Living", icon: "🌅", desc: "Guests enjoying the patio or deck" },
+  { id: "morning-coffee", label: "Morning Coffee", desc: "Guest enjoying coffee with the view" },
+  { id: "couple-dinner", label: "Romantic Dinner", desc: "Couple cooking or dining together" },
+  { id: "friends-gathering", label: "Friends Hangout", desc: "Group relaxing, drinks and conversation" },
+  { id: "solo-reading", label: "Cozy Retreat", desc: "Solo guest reading or relaxing" },
+  { id: "family-fun", label: "Family Time", desc: "Family enjoying the space together" },
+  { id: "outdoor-lounge", label: "Outdoor Living", desc: "Guests enjoying the patio or deck" },
 ];
 
 const SEASONS = [
-  { id: "spring", label: "Spring", icon: "🌸" },
-  { id: "summer", label: "Summer", icon: "☀️" },
-  { id: "fall", label: "Fall", icon: "🍂" },
-  { id: "winter", label: "Winter", icon: "❄️" },
+  { id: "spring", label: "Spring" },
+  { id: "summer", label: "Summer" },
+  { id: "fall", label: "Fall" },
+  { id: "winter", label: "Winter" },
 ];
 
 const ASPECTS = [
-  { id: "4:5", label: "Instagram Post", icon: "📱", desc: "4:5 portrait" },
-  { id: "1:1", label: "Square", icon: "⬜", desc: "1:1 universal" },
-  { id: "9:16", label: "Story / Reel", icon: "📲", desc: "9:16 vertical" },
-  { id: "16:9", label: "Listing / Banner", icon: "🖥", desc: "16:9 landscape" },
+  { id: "4:5", label: "Instagram Post", desc: "4:5 portrait" },
+  { id: "1:1", label: "Square", desc: "1:1 universal" },
+  { id: "9:16", label: "Story / Reel", desc: "9:16 vertical" },
+  { id: "16:9", label: "Listing / Banner", desc: "16:9 landscape" },
 ];
 
 const PEOPLE = [
@@ -430,7 +430,7 @@ export default function PhotoStudioPage() {
                       : "border-stone-200 hover:border-stone-300"
                   }`}
                 >
-                  <span className="text-2xl">{scene.icon}</span>
+                  
                   <p className="font-medium mt-2 text-sm">{scene.label}</p>
                   <p className="text-xs text-stone-400">{scene.desc}</p>
                 </button>
@@ -454,7 +454,7 @@ export default function PhotoStudioPage() {
                         : "border-stone-200 hover:border-stone-300"
                     }`}
                   >
-                    <span className="text-xl">{season.icon}</span>
+                    
                     <p className="text-sm font-medium mt-1">{season.label}</p>
                   </button>
                 ))}
@@ -560,7 +560,7 @@ export default function PhotoStudioPage() {
                       : "border-stone-200 hover:border-stone-300"
                   }`}
                 >
-                  <span className="text-xl">{aspect.icon}</span>
+                  
                   <p className="text-sm font-medium mt-1">{aspect.label}</p>
                   <p className="text-xs text-stone-400">{aspect.desc}</p>
                 </button>
