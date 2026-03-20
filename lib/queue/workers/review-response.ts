@@ -1,35 +1,48 @@
 /**
- * Worker: review_response
- * Drafts and posts responses to guest reviews.
+ * Review Response Queue Worker
+ *
+ * Handles jobs with job_type = 'review_responses'.
+ * Invoked by the generation queue executor when a review_responses job is dequeued.
+ *
+ * Expected job payload:
+ *   { listingId: string, userId: string }
  */
 
-import type { WorkerContext, TaskResult } from '../types';
+import { generateReviewResponses } from '../../agents/review-response-agent'
 
-export async function runReviewResponse(ctx: WorkerContext): Promise<TaskResult> {
-  const { task } = ctx;
-  const { review_id, review_text, rating, platform } = task.payload as {
-    review_id?: string;
-    review_text?: string;
-    rating?: number;
-    platform?: string;
-  };
+export interface ReviewResponseJobPayload {
+  listingId: string
+  userId: string
+}
 
-  if (!review_id || !review_text) {
-    return { success: false, error: 'Missing review_id or review_text in payload' };
+export async function handleReviewResponseJob(
+  payload: ReviewResponseJobPayload
+): Promise<{ success: boolean; generated: number; errors: string[] }> {
+  const { listingId, userId } = payload
+
+  if (!listingId || !userId) {
+    throw new Error(
+      `Invalid review_responses payload — required fields missing. Received: ${JSON.stringify(payload)}`
+    )
   }
 
-  console.log(`[review_response] Drafting response for review ${review_id} (${rating}★)`);
+  console.log(
+    `[review-response-worker] Starting job: listing=${listingId} user=${userId}`
+  )
 
-  // TODO: call Claude API to generate response in owner's voice
-  // TODO: post response via Airbnb/Vrbo API or scraper
+  const result = await generateReviewResponses(listingId, userId)
 
-  const result = {
-    review_id,
-    platform: platform ?? 'airbnb',
-    responded_at: new Date().toISOString(),
-    response_draft: `Thank you so much for your wonderful review! We're thrilled you enjoyed your stay and hope to welcome you back soon.`,
-    posted: false, // set to true once API integration is live
-  };
+  console.log(
+    `[review-response-worker] Completed: generated=${result.generated} skipped=${result.skipped} errors=${result.errors.length}`
+  )
 
-  return { success: true, data: result };
+  if (result.errors.length > 0) {
+    console.warn('[review-response-worker] Non-fatal errors during generation:', result.errors)
+  }
+
+  return {
+    success: result.success,
+    generated: result.generated,
+    errors: result.errors,
+  }
 }
