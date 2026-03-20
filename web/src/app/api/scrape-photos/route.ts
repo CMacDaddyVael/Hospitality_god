@@ -91,6 +91,34 @@ function isPropertyPhoto(url: string): boolean {
   ];
   if (junkPathSegments.some(seg => url.includes(seg))) return false;
 
+  // Filter out host/people photos and editorial/marketing images
+  const peoplePatterns = [
+    /\/User/i,
+    /\/host/i,
+    /\/portrait/i,
+    /\/headshot/i,
+    /\/editorial/i,
+    /\/marketing/i,
+    /\/graphic/i,
+    /\/illustration/i,
+    /\/infographic/i,
+    /\/banner/i,
+    /\/hero/i,
+    /\/promo/i,
+    /\/campaign/i,
+  ];
+  if (peoplePatterns.some(p => p.test(url))) return false;
+
+  // Property listing photos on Airbnb must contain "Hosting-" in the path
+  // Real listing photos: /im/pictures/miso/Hosting-12345/original/...
+  // Non-property images (people, graphics, editorial) do NOT have "Hosting-"
+  const isAirbnbCdn = /muscache\.com/i.test(url);
+  if (isAirbnbCdn) {
+    const hasHostingPath = /Hosting-\d+/i.test(url);
+    const hasMediaPath = /\/im\/pictures\//i.test(url) || /\/4ea\/air\/v2\/pictures\//i.test(url);
+    if (hasMediaPath && !hasHostingPath) return false;
+  }
+
   return true;
 }
 
