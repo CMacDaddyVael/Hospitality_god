@@ -192,56 +192,114 @@ function FadeIn({
 }
 
 /* ------------------------------------------------------------------ */
-/*  Mock activity feed                                                 */
+/*  Dynamic activity feed based on audit data                          */
 /* ------------------------------------------------------------------ */
 
-const MOCK_ACTIVITY: ActivityItem[] = [
-  {
-    id: 1,
-    icon: CheckCircle2,
-    label: "Listing audit completed",
-    detail: "Identified 5 optimization opportunities",
-    time: "2h ago",
-    color: "text-emerald-500",
-    bg: "bg-emerald-50",
-  },
-  {
-    id: 2,
-    icon: Image,
-    label: "Generated 2 lifestyle photos",
-    detail: "Pool sunset scene, Morning coffee patio",
-    time: "4h ago",
-    color: "text-brand-500",
-    bg: "bg-brand-50",
-  },
-  {
-    id: 3,
-    icon: MessageSquare,
-    label: "Drafted review response",
-    detail: "5-star review from Sarah M.",
-    time: "6h ago",
-    color: "text-blue-500",
-    bg: "bg-blue-50",
-  },
-  {
-    id: 4,
-    icon: FileText,
-    label: "Social post created",
-    detail: "Instagram reel concept for weekend",
-    time: "1d ago",
-    color: "text-violet-500",
-    bg: "bg-violet-50",
-  },
-  {
-    id: 5,
-    icon: BarChart3,
-    label: "Competitor analysis refreshed",
-    detail: "Tracked 4 nearby listings",
-    time: "1d ago",
-    color: "text-amber-500",
-    bg: "bg-amber-50",
-  },
-];
+function buildActivityFeed(audit: AuditData | null): ActivityItem[] {
+  if (!audit?.audit) {
+    return [
+      {
+        id: 1,
+        icon: Sparkles,
+        label: "Ready to get started",
+        detail: "Run your first listing audit to see activity here",
+        time: "now",
+        color: "text-stone-400",
+        bg: "bg-stone-50",
+      },
+    ];
+  }
+
+  const a = audit.audit;
+  const propertyName = a.property_name || "your listing";
+  const fixCount = a.top_5_fixes?.length || 0;
+  const categories = a.categories || [];
+  const lowCategories = categories.filter((c) => c.score < 60);
+  const topCategory = categories.length > 0
+    ? categories.reduce((best, c) => (c.score > best.score ? c : best), categories[0])
+    : null;
+
+  const items: ActivityItem[] = [
+    {
+      id: 1,
+      icon: CheckCircle2,
+      label: "Listing audit completed",
+      detail: `Identified ${fixCount} optimization opportunities for ${propertyName}`,
+      time: "2h ago",
+      color: "text-emerald-500",
+      bg: "bg-emerald-50",
+    },
+  ];
+
+  if (lowCategories.length > 0) {
+    items.push({
+      id: 2,
+      icon: Target,
+      label: `${lowCategories.length} areas need attention`,
+      detail: lowCategories.map((c) => c.name).join(", "),
+      time: "2h ago",
+      color: "text-orange-500",
+      bg: "bg-orange-50",
+    });
+  }
+
+  if (topCategory) {
+    items.push({
+      id: 3,
+      icon: TrendingUp,
+      label: `${topCategory.name} is your strongest area`,
+      detail: `Scored ${topCategory.score}/100 — ${topCategory.grade} grade`,
+      time: "2h ago",
+      color: "text-emerald-500",
+      bg: "bg-emerald-50",
+    });
+  }
+
+  // Content plan activity
+  const contentPlan = typeof window !== "undefined"
+    ? localStorage.getItem("hg_content_plan")
+    : null;
+  if (contentPlan) {
+    try {
+      const plan = JSON.parse(contentPlan);
+      const deliverableCount = plan.deliverables?.length || 0;
+      if (deliverableCount > 0) {
+        items.push({
+          id: 4,
+          icon: FileText,
+          label: `${deliverableCount} deliverables ready for review`,
+          detail: plan.summary || "Content plan generated",
+          time: "1h ago",
+          color: "text-violet-500",
+          bg: "bg-violet-50",
+        });
+      }
+    } catch {}
+  }
+
+  // Lifestyle photos activity
+  const photos = typeof window !== "undefined"
+    ? localStorage.getItem("hg_generated_photos")
+    : null;
+  if (photos) {
+    try {
+      const photoList = JSON.parse(photos);
+      if (photoList.length > 0) {
+        items.push({
+          id: 5,
+          icon: Image,
+          label: `Generated ${photoList.length} lifestyle photo${photoList.length > 1 ? "s" : ""}`,
+          detail: `AI lifestyle images for ${propertyName}`,
+          time: "4h ago",
+          color: "text-brand-500",
+          bg: "bg-brand-50",
+        });
+      }
+    } catch {}
+  }
+
+  return items.slice(0, 5);
+}
 
 /* ------------------------------------------------------------------ */
 /*  Quick action cards                                                 */
@@ -299,6 +357,7 @@ export default function DashboardPage() {
   }, []);
 
   const topFix = auditData?.audit.top_5_fixes?.[0];
+  const activityFeed = useMemo(() => buildActivityFeed(auditData), [auditData]);
 
   const agentSummary = useMemo(() => {
     if (!auditData) return null;
@@ -634,7 +693,7 @@ export default function DashboardPage() {
             <div className="absolute left-[19px] top-3 bottom-3 w-px bg-gradient-to-b from-stone-200 via-stone-100 to-transparent" />
 
             <div className="space-y-1">
-              {MOCK_ACTIVITY.map((item) => {
+              {activityFeed.map((item) => {
                 const Icon = item.icon;
                 return (
                   <div

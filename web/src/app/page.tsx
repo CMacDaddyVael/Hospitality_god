@@ -219,7 +219,7 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF9F7]">
+    <div className="min-h-screen bg-[#FAF9F7] film-grain">
       {/* ============================================================ */}
       {/*  Nav                                                          */}
       {/* ============================================================ */}
@@ -253,13 +253,21 @@ export default function LandingPage() {
               Pricing
             </a>
           </div>
-          <a
-            href="#audit"
-            className="group inline-flex items-center gap-1.5 text-sm font-medium text-white bg-stone-900 hover:bg-stone-800 px-4 py-2 rounded-lg transition-all active:scale-[0.98] shadow-sm"
-          >
-            Free Audit
-            <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
-          </a>
+          <div className="flex items-center gap-4">
+            <a
+              href="/dashboard"
+              className="text-sm font-medium text-stone-500 hover:text-stone-900 transition-colors"
+            >
+              Sign In
+            </a>
+            <a
+              href="#audit"
+              className="group inline-flex items-center gap-1.5 text-sm font-medium text-white bg-stone-900 hover:bg-stone-800 px-5 py-2.5 rounded-lg transition-all active:scale-[0.98] shadow-sm"
+            >
+              Start Free Audit
+              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+            </a>
+          </div>
         </div>
       </nav>
 
@@ -286,18 +294,18 @@ export default function LandingPage() {
           </div>
 
           {/* Heading */}
-          <h1 className="animate-slide-up font-heading text-5xl sm:text-6xl lg:text-[4.5rem] font-bold tracking-tight leading-[1.08] mb-6">
-            <span className="text-gradient-subtle">Your Airbnb listings,</span>
+          <h1 className="animate-slide-up font-display text-5xl sm:text-6xl lg:text-[4.5rem] font-semibold tracking-tight leading-[1.08] mb-6">
+            <span className="text-stone-900">Your rental deserves</span>
             <br />
-            <span className="text-gradient">perfected by AI.</span>
+            <span className="text-stone-900">a </span>
+            <span className="text-gradient italic">real marketing team.</span>
           </h1>
 
           {/* Subheading */}
-          <p className="animate-slide-up-delay text-lg sm:text-xl text-stone-500 max-w-2xl mx-auto mb-12 leading-relaxed">
-            A full marketing team for your rental -- listing optimization,
-            lifestyle photos, social content, review responses -- all for under{" "}
-            <span className="font-mono font-semibold text-stone-700">$600</span>{" "}
-            a year.
+          <p className="animate-slide-up-delay text-lg sm:text-xl text-stone-500 max-w-2xl mx-auto mb-12 leading-relaxed font-sans">
+            Listing optimization, lifestyle photos, social content, review
+            responses -- an entire marketing department for your rental. All
+            powered by AI.
           </p>
 
           {/* Audit Form */}
@@ -373,7 +381,7 @@ export default function LandingPage() {
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-600 mb-3">
               Everything you need
             </p>
-            <h2 className="font-heading text-3xl sm:text-4xl font-bold tracking-tight text-stone-900 mb-4">
+            <h2 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight text-stone-900 mb-4">
               Your AI marketing team delivers weekly
             </h2>
             <p className="text-stone-500 max-w-xl mx-auto text-lg">
@@ -397,7 +405,7 @@ export default function LandingPage() {
                   >
                     <f.icon className={`w-5 h-5 ${f.iconColor}`} />
                   </div>
-                  <h3 className="font-heading font-semibold text-stone-900 mb-2 tracking-tight">
+                  <h3 className="font-sans font-semibold text-stone-900 mb-2 tracking-tight">
                     {f.title}
                   </h3>
                   <p className="text-sm text-stone-500 leading-relaxed">
@@ -419,7 +427,7 @@ export default function LandingPage() {
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-600 mb-3">
               Simple process
             </p>
-            <h2 className="font-heading text-3xl sm:text-4xl font-bold tracking-tight text-stone-900">
+            <h2 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight text-stone-900">
               Three steps. Five minutes.
             </h2>
           </div>
@@ -458,7 +466,7 @@ export default function LandingPage() {
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-600 mb-3">
               Pricing
             </p>
-            <h2 className="font-heading text-3xl sm:text-4xl font-bold tracking-tight text-stone-900 mb-4">
+            <h2 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight text-stone-900 mb-4">
               Less than one night's booking
             </h2>
             <p className="text-stone-500 text-lg max-w-lg mx-auto">
@@ -544,7 +552,7 @@ export default function LandingPage() {
         {/* Gradient glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] rounded-full bg-brand-600/10 blur-[100px]" />
         <div className="relative max-w-3xl mx-auto px-6 text-center">
-          <h2 className="font-heading text-3xl sm:text-4xl font-bold tracking-tight text-white mb-4">
+          <h2 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight text-white mb-4">
             Stop leaving bookings on the table
           </h2>
           <p className="text-stone-400 text-lg mb-10 max-w-xl mx-auto leading-relaxed">

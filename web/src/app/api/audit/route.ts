@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { FirecrawlClient } from "@mendable/firecrawl-js";
+import { filterPropertyPhotos } from "@/lib/photo-filter";
 
 export const maxDuration = 60;
 
@@ -49,12 +50,11 @@ ${markdown}
 
     console.log("Scraped content length:", scrapedContent.length);
 
-    // Extract listing photos from markdown for lifestyle generation
-    const photoRegex = /https:\/\/a0\.muscache\.com\/im\/pictures\/[^\s)"\]]+/g;
-    const listingPhotos = [...new Set(markdown.match(photoRegex) || [])].filter(
-      (u) => !u.includes("icon") && !u.includes("avatar") && !u.includes("platform-asset")
-    );
-    console.log("Found", listingPhotos.length, "listing photos");
+    // Extract listing photos from markdown — use shared strict filter
+    const photoRegex = /https:\/\/a0\.muscache\.com\/[^\s)"\]]+/g;
+    const rawPhotoUrls = [...new Set(markdown.match(photoRegex) || [])];
+    const listingPhotos = filterPropertyPhotos(rawPhotoUrls);
+    console.log("Found", listingPhotos.length, "property photos (filtered from", rawPhotoUrls.length, "raw URLs)");
 
     // Analyze with Claude
     const client = new Anthropic();

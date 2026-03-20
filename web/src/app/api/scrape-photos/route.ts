@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { FirecrawlClient } from "@mendable/firecrawl-js";
+import {
+  isPropertyPhoto as isPropertyPhotoShared,
+  cleanImageUrl,
+  normalizePhotoUrl,
+  upgradeToLargeFormat as upgradeToLargeFormatShared,
+} from "@/lib/photo-filter";
 
 export const maxDuration = 60;
 
@@ -264,6 +270,40 @@ function extractPropertyInfo(
   return info;
 }
 
+function getRejectReason(url: string): string {
+  const included = INCLUDE_PATTERNS.some((p) => p.test(url));
+  if (!included) return "no-include-match";
+
+  const excluded = EXCLUDE_PATTERNS.some((p) => p.test(url));
+  if (excluded) return "exclude-pattern";
+
+  const path = url.split("?")[0];
+  const hasLongPath = path.split("/").filter(s => s.length > 0).length >= 5;
+  if (!hasLongPath) return "short-path";
+
+  const junkPathSegments = [
+    "AirbnbPlatformAssets", "category", "amenities", "experiences",
+    "airbnb-platform-assets", "search-bar", "navigation",
+  ];
+  if (junkPathSegments.some(seg => url.includes(seg))) return "junk-segment";
+
+  const peoplePatterns = [
+    /\/User/i, /\/host/i, /\/portrait/i, /\/headshot/i, /\/editorial/i,
+    /\/marketing/i, /\/graphic/i, /\/illustration/i, /\/infographic/i,
+    /\/banner/i, /\/hero/i, /\/promo/i, /\/campaign/i,
+  ];
+  if (peoplePatterns.some(p => p.test(url))) return "people-pattern";
+
+  const isAirbnbCdn = /muscache\.com/i.test(url);
+  if (isAirbnbCdn) {
+    const hasHostingPath = /Hosting-\d+/i.test(url);
+    const hasMediaPath = /\/im\/pictures\//i.test(url) || /\/4ea\/air\/v2\/pictures\//i.test(url);
+    if (hasMediaPath && !hasHostingPath) return "no-Hosting-in-path";
+  }
+
+  return "unknown";
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { url } = await req.json();
@@ -342,22 +382,26 @@ export async function POST(req: NextRequest) {
     // ─── Filter to property photos only ───
     const seenNormalized = new Set<string>();
     const propertyPhotos: string[] = [];
+    const rejected: { url: string; reason: string }[] = [];
 
     for (const rawUrl of allRawUrls) {
-      // Clean up URL encoding artifacts
-      const cleanUrl = rawUrl
-        .replace(/\\u002F/g, "/")
-        .replace(/\\u0026/g, "&")
-        .replace(/\\/g, "");
+      const cleanUrl = cleanImageUrl(rawUrl);
 
-      if (!isPropertyPhoto(cleanUrl)) continue;
+      if (!isPropertyPhotoShared(cleanUrl)) {
+        rejected.push({ url: cleanUrl.slice(0, 120), reason: getRejectReason(cleanUrl) });
+        continue;
+      }
 
-      const normalized = normalizeUrl(cleanUrl);
+      const normalized = normalizePhotoUrl(cleanUrl);
       if (seenNormalized.has(normalized)) continue;
       seenNormalized.add(normalized);
 
-      // Upgrade to large format
-      propertyPhotos.push(upgradeToLargeFormat(cleanUrl));
+      propertyPhotos.push(upgradeToLargeFormatShared(cleanUrl));
+    }
+
+    console.log(`Photo scraper: ${allRawUrls.size} total URLs, ${propertyPhotos.length} property photos, ${rejected.length} rejected`);
+    if (rejected.length > 0) {
+      console.log("Sample rejections:", JSON.stringify(rejected.slice(0, 10), null, 2));
     }
 
     // ─── Strategy 2: If we got very few photos, try the photo tour URL ───
@@ -378,21 +422,21 @@ export async function POST(req: NextRequest) {
           const tourHtml = tourResult.html || "";
 
           for (const u of extractImageUrls(tourMarkdown)) {
-            const clean = u.replace(/\\u002F/g, "/").replace(/\\/g, "");
-            if (!isPropertyPhoto(clean)) continue;
-            const norm = normalizeUrl(clean);
+            const clean = cleanImageUrl(u);
+            if (!isPropertyPhotoShared(clean)) continue;
+            const norm = normalizePhotoUrl(clean);
             if (seenNormalized.has(norm)) continue;
             seenNormalized.add(norm);
-            propertyPhotos.push(upgradeToLargeFormat(clean));
+            propertyPhotos.push(upgradeToLargeFormatShared(clean));
           }
 
           for (const u of extractImageUrls(tourHtml)) {
-            const clean = u.replace(/\\u002F/g, "/").replace(/\\/g, "");
-            if (!isPropertyPhoto(clean)) continue;
-            const norm = normalizeUrl(clean);
+            const clean = cleanImageUrl(u);
+            if (!isPropertyPhotoShared(clean)) continue;
+            const norm = normalizePhotoUrl(clean);
             if (seenNormalized.has(norm)) continue;
             seenNormalized.add(norm);
-            propertyPhotos.push(upgradeToLargeFormat(clean));
+            propertyPhotos.push(upgradeToLargeFormatShared(clean));
           }
         } catch (e) {
           console.warn("Photo tour scrape failed, continuing with main page results:", e);
