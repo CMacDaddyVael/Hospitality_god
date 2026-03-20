@@ -97,6 +97,14 @@ Rules:
 - Captions should be casual, warm, aspirational — not salesy
 - Reference specific features of the property
 - Consider ${CURRENT_SEASON} and any upcoming holidays
+
+CONTENT SAFETY (STRICT — NEVER VIOLATE):
+- NEVER suggest romantic, sexual, or intimate content between people (no "showering together", no "romantic bath", no bedroom intimacy, no couples in bed)
+- ALL content must be family-friendly and brand-safe
+- Focus on ACTIVITIES: cooking, reading, exploring, dining, relaxing on the deck, playing games, hiking, swimming
+- Couples content is fine but keep it wholesome: cooking together, sunset drinks on the patio, exploring the town — NOT intimate/bedroom/bathroom scenarios
+- Never reference bathrooms, showers, baths, or bedrooms in a romantic context
+- Think "Airbnb marketing" not "honeymoon brochure"
 - Each social post should target a different audience (couples, families, solo travelers)
 - Include specific image prompts that reference the actual property spaces
 

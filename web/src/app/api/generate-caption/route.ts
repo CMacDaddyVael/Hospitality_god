@@ -26,6 +26,9 @@ Rules:
 - Generate 8-12 relevant hashtags
 - Make it feel authentic, not salesy
 - Focus on the EXPERIENCE, not the property features
+- MUST be family-friendly and brand-safe — no romantic/sexual/intimate content
+- Focus on activities: cooking, reading, exploring, relaxing, dining, playing games
+- NEVER reference bathrooms, showers, baths, or bedrooms in a romantic way
 
 Return JSON only:
 {"caption": "the caption text", "hashtags": "#hashtag1 #hashtag2 ..."}`,

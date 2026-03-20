@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { ArrowRight, TrendingUp, Camera, Inbox, Shield } from "lucide-react";
 
 interface AuditData {
   audit: {
@@ -9,13 +10,14 @@ interface AuditData {
     overall_score: number;
     summary: string;
     categories: { name: string; grade: string; score: number }[];
+    top_5_fixes: { priority: number; title: string; description: string; impact: string }[];
   };
   url: string;
 }
 
 function scoreColor(score: number) {
-  if (score >= 80) return "text-green-600";
-  if (score >= 60) return "text-yellow-600";
+  if (score >= 80) return "text-emerald-600";
+  if (score >= 60) return "text-amber-600";
   if (score >= 40) return "text-orange-600";
   return "text-red-600";
 }
@@ -28,107 +30,127 @@ export default function DashboardPage() {
     if (stored) setAuditData(JSON.parse(stored));
   }, []);
 
-  const activities = [
-    { time: "Just now", action: "Listing audit completed", type: "audit", icon: "🔍" },
-    { time: "Ready", action: "3 social posts prepared for your review", type: "social", icon: "📸" },
-    { time: "Ready", action: "Optimized listing copy ready to copy-paste", type: "listing", icon: "✍️" },
-    { time: "Ready", action: "2 review response drafts waiting", type: "review", icon: "⭐" },
-    { time: "Upcoming", action: "Seasonal update: Spring content scheduled", type: "seasonal", icon: "🌸" },
-  ];
+  const topFix = auditData?.audit.top_5_fixes?.[0];
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold">Dashboard</h1>
-          <p className="text-gray-500 mt-1">
-            {auditData ? auditData.audit.property_name : "Your property overview"}
-          </p>
-        </div>
-        <Link
-          href="/dashboard/deliverables"
-          className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-400 transition"
-        >
-          📦 View Deliverables
-          <span className="bg-white/20 px-2 py-0.5 rounded-full text-xs">5 new</span>
-        </Link>
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold tracking-tight text-stone-900">
+          {auditData ? auditData.audit.property_name : "Welcome back"}
+        </h1>
+        <p className="text-stone-500 mt-1 text-sm">
+          Here&apos;s what your marketing team has been working on.
+        </p>
       </div>
 
-      {/* Score + Stats */}
-      <div className="grid md:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <p className="text-sm text-gray-500 mb-1">Listing Score</p>
-          <p className={`text-3xl font-bold ${scoreColor(auditData?.audit.overall_score || 0)}`}>
-            {auditData?.audit.overall_score || "—"}
-            <span className="text-gray-300 text-lg font-normal">/100</span>
-          </p>
-          <p className="text-xs text-gray-400 mt-1">Updated today</p>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <p className="text-sm text-gray-500 mb-1">Pending Deliverables</p>
-          <p className="text-3xl font-bold text-gray-900">5</p>
-          <p className="text-xs text-green-600 mt-1">Ready for review</p>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <p className="text-sm text-gray-500 mb-1">Tasks This Week</p>
-          <p className="text-3xl font-bold text-gray-900">12</p>
-          <p className="text-xs text-gray-400 mt-1">Completed by your AI team</p>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <p className="text-sm text-gray-500 mb-1">Score Trend</p>
-          <p className="text-3xl font-bold text-green-600">+0</p>
-          <p className="text-xs text-gray-400 mt-1">Since last week</p>
-        </div>
-      </div>
-
-      {/* Category Scores */}
-      {auditData && (
-        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8">
-          <h2 className="font-semibold mb-4">Category Breakdown</h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {auditData.audit.categories.map((cat) => (
-              <div key={cat.name} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <span className="text-sm text-gray-700">{cat.name}</span>
-                <div className="flex items-center gap-2">
-                  <div className="w-16 bg-gray-200 rounded-full h-1.5">
-                    <div
-                      className="h-1.5 rounded-full"
-                      style={{
-                        width: `${cat.score}%`,
-                        backgroundColor: cat.score >= 80 ? "#22c55e" : cat.score >= 60 ? "#eab308" : "#f97316",
-                      }}
-                    />
-                  </div>
-                  <span className="text-sm font-semibold w-6 text-right">{cat.grade}</span>
-                </div>
-              </div>
-            ))}
+      {/* Priority Card */}
+      {topFix && (
+        <div className="bg-white rounded-xl border border-stone-200 p-6 mb-6 hover:border-stone-300 transition-colors">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-lg bg-brand-50 flex items-center justify-center flex-shrink-0">
+              <TrendingUp className="w-5 h-5 text-brand-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium text-brand-600 uppercase tracking-wide mb-1">This week&apos;s priority</p>
+              <h3 className="font-semibold text-stone-900 mb-1">{topFix.title}</h3>
+              <p className="text-sm text-stone-500 mb-3">{topFix.description}</p>
+              <span className="text-xs text-emerald-600 font-medium">{topFix.impact}</span>
+            </div>
+            <Link
+              href="/dashboard/deliverables"
+              className="flex-shrink-0 px-4 py-2 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition"
+            >
+              View fix
+            </Link>
           </div>
         </div>
       )}
 
-      {/* Activity Feed */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h2 className="font-semibold mb-4">Recent Activity</h2>
-        <div className="space-y-4">
-          {activities.map((item, i) => (
-            <div key={i} className="flex items-start gap-3">
-              <span className="text-xl mt-0.5">{item.icon}</span>
-              <div className="flex-1">
-                <p className="text-sm text-gray-700">{item.action}</p>
-                <p className="text-xs text-gray-400">{item.time}</p>
-              </div>
-              {item.type !== "seasonal" && (
-                <Link
-                  href="/dashboard/deliverables"
-                  className="text-xs text-green-600 font-medium hover:text-green-700"
-                >
-                  Review →
-                </Link>
-              )}
-            </div>
-          ))}
+      {/* Score + Quick Actions */}
+      <div className="grid md:grid-cols-3 gap-4 mb-8">
+        {/* Score */}
+        <div className="bg-white rounded-xl border border-stone-200 p-6">
+          <p className="text-xs font-medium text-stone-400 uppercase tracking-wide mb-3">Listing Score</p>
+          {auditData ? (
+            <>
+              <p className={`text-4xl font-bold font-mono ${scoreColor(auditData.audit.overall_score)}`}>
+                {auditData.audit.overall_score}
+              </p>
+              <p className="text-xs text-stone-400 mt-1">out of 100</p>
+            </>
+          ) : (
+            <>
+              <p className="text-4xl font-bold font-mono text-stone-300">—</p>
+              <p className="text-xs text-stone-400 mt-1">Run an audit to get your score</p>
+            </>
+          )}
         </div>
+
+        {/* Categories */}
+        {auditData && (
+          <div className="bg-white rounded-xl border border-stone-200 p-6 md:col-span-2">
+            <p className="text-xs font-medium text-stone-400 uppercase tracking-wide mb-3">Breakdown</p>
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+              {auditData.audit.categories.map((cat) => (
+                <div key={cat.name} className="flex items-center justify-between">
+                  <span className="text-sm text-stone-600 truncate mr-2">{cat.name}</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-12 bg-stone-100 rounded-full h-1.5">
+                      <div
+                        className="h-1.5 rounded-full"
+                        style={{
+                          width: `${cat.score}%`,
+                          backgroundColor: cat.score >= 80 ? "#059669" : cat.score >= 60 ? "#d97706" : "#ea580c",
+                        }}
+                      />
+                    </div>
+                    <span className="text-xs font-semibold text-stone-700 w-4">{cat.grade}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Quick Actions */}
+      <div className="grid sm:grid-cols-3 gap-4">
+        <Link
+          href="/dashboard/deliverables"
+          className="group bg-white rounded-xl border border-stone-200 p-6 hover:border-stone-300 hover:shadow-sm transition-all"
+        >
+          <Inbox className="w-8 h-8 text-stone-300 group-hover:text-brand-500 transition mb-3" />
+          <h3 className="font-semibold text-stone-900 mb-1 text-sm">Content Inbox</h3>
+          <p className="text-xs text-stone-500">Review social posts, listing updates, and review responses your team prepared.</p>
+          <span className="inline-flex items-center gap-1 text-xs text-brand-600 font-medium mt-3 group-hover:gap-2 transition-all">
+            Open inbox <ArrowRight className="w-3 h-3" />
+          </span>
+        </Link>
+
+        <Link
+          href="/dashboard/photos"
+          className="group bg-white rounded-xl border border-stone-200 p-6 hover:border-stone-300 hover:shadow-sm transition-all"
+        >
+          <Camera className="w-8 h-8 text-stone-300 group-hover:text-brand-500 transition mb-3" />
+          <h3 className="font-semibold text-stone-900 mb-1 text-sm">Photo Studio</h3>
+          <p className="text-xs text-stone-500">Generate lifestyle photos of guests enjoying your property. Pick your cast and scene.</p>
+          <span className="inline-flex items-center gap-1 text-xs text-brand-600 font-medium mt-3 group-hover:gap-2 transition-all">
+            Create photos <ArrowRight className="w-3 h-3" />
+          </span>
+        </Link>
+
+        <Link
+          href="/dashboard/competitors"
+          className="group bg-white rounded-xl border border-stone-200 p-6 hover:border-stone-300 hover:shadow-sm transition-all"
+        >
+          <Shield className="w-8 h-8 text-stone-300 group-hover:text-brand-500 transition mb-3" />
+          <h3 className="font-semibold text-stone-900 mb-1 text-sm">Competitive Intel</h3>
+          <p className="text-xs text-stone-500">See how you compare to nearby listings and get alerts on market changes.</p>
+          <span className="inline-flex items-center gap-1 text-xs text-brand-600 font-medium mt-3 group-hover:gap-2 transition-all">
+            View market <ArrowRight className="w-3 h-3" />
+          </span>
+        </Link>
       </div>
     </div>
   );

@@ -2,6 +2,15 @@
 
 import { useState, useEffect } from "react";
 
+interface CastMember {
+  id: string;
+  name: string;
+  gender: string;
+  ethnicity: string;
+  age: string;
+  filePath: string;
+}
+
 interface GeneratedPhoto {
   id: string;
   imageUrl: string;
@@ -60,6 +69,8 @@ export default function PhotoStudioPage() {
   const [selectedPhotoUrl, setSelectedPhotoUrl] = useState<string | null>(null);
   const [loadingPhotos, setLoadingPhotos] = useState(false);
   const [propertyDescription, setPropertyDescription] = useState("");
+  const [castMembers, setCastMembers] = useState<CastMember[]>([]);
+  const [selectedCast, setSelectedCast] = useState<CastMember[]>([]);
 
   // Load listing photos on mount
   useEffect(() => {
@@ -107,6 +118,14 @@ export default function PhotoStudioPage() {
       .finally(() => setLoadingPhotos(false));
   }, []);
 
+  // Load cast manifest
+  useEffect(() => {
+    fetch("/cast/manifest.json")
+      .then((r) => r.json())
+      .then((data: CastMember[]) => setCastMembers(data))
+      .catch(() => {});
+  }, []);
+
   // Load gallery from localStorage
   useEffect(() => {
     const saved = localStorage.getItem("hg_photo_gallery");
@@ -145,6 +164,9 @@ export default function PhotoStudioPage() {
         friends: "A group of 3-4 friends",
       };
 
+      // Build talent image URLs from selected cast members
+      const talentImageUrls = selectedCast.map((c) => `${window.location.origin}${c.filePath}`);
+
       const res = await fetch("/api/generate-lifestyle", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -153,6 +175,7 @@ export default function PhotoStudioPage() {
           season: selectedSeason,
           sceneType: selectedScene,
           propertyDescription: `${propertyDescription}. Show ${peopleMap[selectedPeople] || "a couple"} in the scene. Aspect ratio: ${selectedAspect}.`,
+          talentImageUrls: talentImageUrls.length > 0 ? talentImageUrls : undefined,
         }),
       });
 
@@ -228,8 +251,8 @@ export default function PhotoStudioPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Photo Studio</h1>
-          <p className="text-gray-500 mt-1">
+          <h1 className="text-2xl font-bold tracking-tight text-stone-900">Photo Studio</h1>
+          <p className="text-stone-500 mt-1">
             AI lifestyle photos of your property — ready for Instagram and your listing
           </p>
         </div>
@@ -237,10 +260,10 @@ export default function PhotoStudioPage() {
           <button
             onClick={() => setShowGallery(!showGallery)}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-              showGallery ? "bg-gray-900 text-white" : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
+              showGallery ? "bg-stone-900 text-white" : "bg-white border border-stone-200 text-stone-600 hover:bg-stone-50"
             }`}
           >
-            🖼 Gallery ({gallery.length})
+            Gallery ({gallery.length})
             {favoriteCount > 0 && (
               <span className="ml-1 text-yellow-500">★{favoriteCount}</span>
             )}
@@ -252,12 +275,12 @@ export default function PhotoStudioPage() {
       {showGallery && gallery.length > 0 && (
         <div className="mb-8">
           <div className="flex gap-2 mb-4">
-            <button className="px-3 py-1 rounded-lg text-xs font-medium bg-gray-900 text-white">All</button>
-            <button className="px-3 py-1 rounded-lg text-xs font-medium bg-white border border-gray-200 text-gray-600">★ Favorites</button>
+            <button className="px-3 py-1 rounded-lg text-xs font-medium bg-stone-900 text-white">All</button>
+            <button className="px-3 py-1 rounded-lg text-xs font-medium bg-white border border-stone-200 text-stone-600">★ Favorites</button>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {gallery.map((photo) => (
-              <div key={photo.id} className="relative group rounded-xl overflow-hidden border border-gray-200">
+              <div key={photo.id} className="relative group rounded-xl overflow-hidden border border-stone-200">
                 <img src={photo.imageUrl} alt="" className="w-full aspect-square object-cover" />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition flex items-end">
                   <div className="w-full p-2 opacity-0 group-hover:opacity-100 transition flex justify-between items-center">
@@ -289,18 +312,18 @@ export default function PhotoStudioPage() {
 
       {/* Loading photos */}
       {step === "loading" && (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-          <div className="animate-spin h-8 w-8 border-4 border-green-500 border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-gray-500">Loading your listing photos...</p>
+        <div className="bg-white rounded-xl border border-stone-200 p-12 text-center">
+          <div className="animate-spin h-8 w-8 border-4 border-brand-500 border-t-transparent rounded-full mx-auto mb-4" />
+          <p className="text-stone-500">Loading your listing photos...</p>
         </div>
       )}
 
       {/* Step 0: Pick a photo */}
       {step === "pick-photo" && (
         <div className="space-y-6">
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="bg-white rounded-xl border border-stone-200 p-6">
             <h3 className="font-semibold mb-1">Choose a space from your listing</h3>
-            <p className="text-sm text-gray-400 mb-4">
+            <p className="text-sm text-stone-400 mb-4">
               Pick the room or area you want to create lifestyle content for
             </p>
 
@@ -312,8 +335,8 @@ export default function PhotoStudioPage() {
                     onClick={() => setSelectedPhotoUrl(url)}
                     className={`relative aspect-square rounded-xl overflow-hidden border-3 transition ${
                       selectedPhotoUrl === url
-                        ? "border-green-500 ring-2 ring-green-500/30"
-                        : "border-gray-200 hover:border-gray-300"
+                        ? "border-brand-500 ring-2 ring-brand-500/30"
+                        : "border-stone-200 hover:border-stone-300"
                     }`}
                   >
                     <img
@@ -322,7 +345,7 @@ export default function PhotoStudioPage() {
                       className="w-full h-full object-cover"
                     />
                     {selectedPhotoUrl === url && (
-                      <div className="absolute top-2 right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                      <div className="absolute top-2 right-2 w-6 h-6 bg-brand-600 rounded-full flex items-center justify-center">
                         <span className="text-white text-xs">✓</span>
                       </div>
                     )}
@@ -331,11 +354,11 @@ export default function PhotoStudioPage() {
               </div>
             ) : (
               <div className="text-center py-8">
-                <p className="text-gray-400 mb-4">No photos found from your listing. Run an audit first or paste a photo URL:</p>
+                <p className="text-stone-400 mb-4">No photos found from your listing. Run an audit first or paste a photo URL:</p>
                 <input
                   type="url"
                   placeholder="Paste a property photo URL..."
-                  className="w-full max-w-md px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full max-w-md px-4 py-3 border border-stone-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   onChange={(e) => {
                     if (e.target.value) {
                       setSelectedPhotoUrl(e.target.value);
@@ -350,7 +373,7 @@ export default function PhotoStudioPage() {
               <div className="mt-6 flex justify-end">
                 <button
                   onClick={() => setStep("configure")}
-                  className="px-6 py-3 bg-green-500 hover:bg-green-400 text-white font-semibold rounded-xl transition"
+                  className="px-6 py-3 bg-brand-600 hover:bg-brand-500 text-white font-semibold rounded-xl transition"
                 >
                   Continue with this photo →
                 </button>
@@ -360,8 +383,8 @@ export default function PhotoStudioPage() {
 
           {/* Selected photo preview */}
           {selectedPhotoUrl && (
-            <div className="bg-white rounded-xl border border-gray-200 p-4">
-              <p className="text-xs text-gray-400 mb-2 font-medium uppercase tracking-wide">Selected space</p>
+            <div className="bg-white rounded-xl border border-stone-200 p-4">
+              <p className="text-xs text-stone-400 mb-2 font-medium uppercase tracking-wide">Selected space</p>
               <img
                 src={selectedPhotoUrl}
                 alt="Selected property photo"
@@ -377,15 +400,15 @@ export default function PhotoStudioPage() {
         <div className="space-y-6">
           {/* Selected photo thumbnail + change */}
           {selectedPhotoUrl && (
-            <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
+            <div className="bg-white rounded-xl border border-stone-200 p-4 flex items-center gap-4">
               <img src={selectedPhotoUrl} alt="" className="w-20 h-20 object-cover rounded-lg" />
               <div className="flex-1">
                 <p className="text-sm font-medium">Selected space</p>
-                <p className="text-xs text-gray-400">This photo will be used as the base for your lifestyle image</p>
+                <p className="text-xs text-stone-400">This photo will be used as the base for your lifestyle image</p>
               </div>
               <button
                 onClick={() => setStep("pick-photo")}
-                className="px-3 py-1.5 text-sm text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-50 transition"
+                className="px-3 py-1.5 text-sm text-stone-500 border border-stone-200 rounded-lg hover:bg-stone-50 transition"
               >
                 Change
               </button>
@@ -393,9 +416,9 @@ export default function PhotoStudioPage() {
           )}
 
           {/* Scene */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="bg-white rounded-xl border border-stone-200 p-6">
             <h3 className="font-semibold mb-1">What&apos;s happening?</h3>
-            <p className="text-sm text-gray-400 mb-4">Choose the vibe for your photo</p>
+            <p className="text-sm text-stone-400 mb-4">Choose the vibe for your photo</p>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {SCENES.map((scene) => (
                 <button
@@ -403,13 +426,13 @@ export default function PhotoStudioPage() {
                   onClick={() => setSelectedScene(scene.id)}
                   className={`p-4 rounded-xl border-2 text-left transition ${
                     selectedScene === scene.id
-                      ? "border-green-500 bg-green-50"
-                      : "border-gray-200 hover:border-gray-300"
+                      ? "border-brand-500 bg-brand-50"
+                      : "border-stone-200 hover:border-stone-300"
                   }`}
                 >
                   <span className="text-2xl">{scene.icon}</span>
                   <p className="font-medium mt-2 text-sm">{scene.label}</p>
-                  <p className="text-xs text-gray-400">{scene.desc}</p>
+                  <p className="text-xs text-stone-400">{scene.desc}</p>
                 </button>
               ))}
             </div>
@@ -417,9 +440,9 @@ export default function PhotoStudioPage() {
 
           {/* Season + People (side by side) */}
           <div className="grid md:grid-cols-2 gap-6">
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <div className="bg-white rounded-xl border border-stone-200 p-6">
               <h3 className="font-semibold mb-1">Season</h3>
-              <p className="text-sm text-gray-400 mb-4">Match your content to the time of year</p>
+              <p className="text-sm text-stone-400 mb-4">Match your content to the time of year</p>
               <div className="grid grid-cols-2 gap-2">
                 {SEASONS.map((season) => (
                   <button
@@ -427,8 +450,8 @@ export default function PhotoStudioPage() {
                     onClick={() => setSelectedSeason(season.id)}
                     className={`p-3 rounded-xl border-2 text-center transition ${
                       selectedSeason === season.id
-                        ? "border-green-500 bg-green-50"
-                        : "border-gray-200 hover:border-gray-300"
+                        ? "border-brand-500 bg-brand-50"
+                        : "border-stone-200 hover:border-stone-300"
                     }`}
                   >
                     <span className="text-xl">{season.icon}</span>
@@ -438,9 +461,9 @@ export default function PhotoStudioPage() {
               </div>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <div className="bg-white rounded-xl border border-stone-200 p-6">
               <h3 className="font-semibold mb-1">Who&apos;s in the photo?</h3>
-              <p className="text-sm text-gray-400 mb-4">Target your ideal guest segment</p>
+              <p className="text-sm text-stone-400 mb-4">Target your ideal guest segment</p>
               <div className="grid grid-cols-2 gap-2">
                 {PEOPLE.map((p) => (
                   <button
@@ -448,8 +471,8 @@ export default function PhotoStudioPage() {
                     onClick={() => setSelectedPeople(p.id)}
                     className={`p-3 rounded-xl border-2 text-center transition ${
                       selectedPeople === p.id
-                        ? "border-green-500 bg-green-50"
-                        : "border-gray-200 hover:border-gray-300"
+                        ? "border-brand-500 bg-brand-50"
+                        : "border-stone-200 hover:border-stone-300"
                     }`}
                   >
                     <p className="text-sm font-medium">{p.label}</p>
@@ -459,10 +482,73 @@ export default function PhotoStudioPage() {
             </div>
           </div>
 
+          {/* Cast Member Picker */}
+          {castMembers.length > 0 && (
+            <div className="bg-white rounded-xl border border-stone-200 p-6">
+              <h3 className="font-semibold mb-1">Choose your guests</h3>
+              <p className="text-sm text-stone-400 mb-4">
+                Select 1-4 AI models for your photo. Using specific faces produces more realistic results.
+                {selectedCast.length > 0 && (
+                  <button onClick={() => setSelectedCast([])} className="ml-2 text-brand-600 hover:text-brand-700 font-medium">
+                    Clear selection
+                  </button>
+                )}
+              </p>
+
+              {selectedCast.length > 0 && (
+                <div className="flex gap-2 mb-4">
+                  {selectedCast.map((c) => (
+                    <div key={c.id} className="relative">
+                      <img
+                        src={c.filePath}
+                        alt={c.name}
+                        className="w-14 h-14 object-cover rounded-full border-2 border-brand-500"
+                      />
+                      <button
+                        onClick={() => setSelectedCast((prev) => prev.filter((p) => p.id !== c.id))}
+                        className="absolute -top-1 -right-1 w-5 h-5 bg-stone-800 text-white rounded-full text-xs flex items-center justify-center"
+                      >
+                        ×
+                      </button>
+                      <p className="text-xs text-center mt-1 text-stone-500">{c.name}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="max-h-48 overflow-y-auto grid grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2">
+                {castMembers
+                  .filter((c) => !selectedCast.find((s) => s.id === c.id))
+                  .slice(0, 60)
+                  .map((c) => (
+                    <button
+                      key={c.id}
+                      onClick={() => {
+                        if (selectedCast.length < 4) {
+                          setSelectedCast((prev) => [...prev, c]);
+                        }
+                      }}
+                      disabled={selectedCast.length >= 4}
+                      className="group relative aspect-square rounded-lg overflow-hidden border border-stone-200 hover:border-brand-400 transition disabled:opacity-30"
+                    >
+                      <img src={c.filePath} alt={c.name} className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition" />
+                      <span className="absolute bottom-0.5 left-0.5 right-0.5 text-[9px] text-white bg-black/50 rounded px-0.5 truncate opacity-0 group-hover:opacity-100 transition">
+                        {c.name}
+                      </span>
+                    </button>
+                  ))}
+              </div>
+              <p className="text-xs text-stone-400 mt-2">
+                {selectedCast.length}/4 selected · {castMembers.length} models available
+              </p>
+            </div>
+          )}
+
           {/* Aspect Ratio */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="bg-white rounded-xl border border-stone-200 p-6">
             <h3 className="font-semibold mb-1">Where will you use this?</h3>
-            <p className="text-sm text-gray-400 mb-4">We&apos;ll size it perfectly for the platform</p>
+            <p className="text-sm text-stone-400 mb-4">We&apos;ll size it perfectly for the platform</p>
             <div className="flex gap-3">
               {ASPECTS.map((aspect) => (
                 <button
@@ -470,13 +556,13 @@ export default function PhotoStudioPage() {
                   onClick={() => setSelectedAspect(aspect.id)}
                   className={`flex-1 p-4 rounded-xl border-2 text-center transition ${
                     selectedAspect === aspect.id
-                      ? "border-green-500 bg-green-50"
-                      : "border-gray-200 hover:border-gray-300"
+                      ? "border-brand-500 bg-brand-50"
+                      : "border-stone-200 hover:border-stone-300"
                   }`}
                 >
                   <span className="text-xl">{aspect.icon}</span>
                   <p className="text-sm font-medium mt-1">{aspect.label}</p>
-                  <p className="text-xs text-gray-400">{aspect.desc}</p>
+                  <p className="text-xs text-stone-400">{aspect.desc}</p>
                 </button>
               ))}
             </div>
@@ -487,29 +573,29 @@ export default function PhotoStudioPage() {
           {/* Generate Button */}
           <button
             onClick={handleGenerate}
-            className="w-full py-4 bg-green-500 hover:bg-green-400 text-white font-semibold rounded-xl transition text-lg"
+            className="w-full py-4 bg-brand-600 hover:bg-brand-500 text-white font-semibold rounded-xl transition text-lg"
           >
-            ✨ Generate Lifestyle Photo
+            Generate lifestyle photo
           </button>
         </div>
       )}
 
       {/* Step 2: Generating */}
       {step === "generating" && (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+        <div className="bg-white rounded-xl border border-stone-200 p-12 text-center">
           <div className="max-w-md mx-auto">
             <div className="text-4xl mb-4">📸</div>
             <h3 className="text-xl font-semibold mb-2">Creating your lifestyle photo...</h3>
-            <p className="text-gray-500 mb-6">
+            <p className="text-stone-500 mb-6">
               Our AI is placing {selectedPeople === "solo" ? "a guest" : selectedPeople === "couple" ? "a couple" : selectedPeople === "family" ? "a family" : "friends"} in your property with a {SCENES.find((s) => s.id === selectedScene)?.label.toLowerCase()} vibe
             </p>
-            <div className="w-full bg-gray-100 rounded-full h-3 mb-2">
+            <div className="w-full bg-stone-100 rounded-full h-3 mb-2">
               <div
-                className="h-3 bg-green-500 rounded-full transition-all duration-500"
+                className="h-3 bg-brand-600 rounded-full transition-all duration-500"
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <p className="text-sm text-gray-400">Usually takes 15-30 seconds</p>
+            <p className="text-sm text-stone-400">Usually takes 15-30 seconds</p>
           </div>
         </div>
       )}
@@ -517,12 +603,12 @@ export default function PhotoStudioPage() {
       {/* Step 3: Results */}
       {step === "results" && generatedImage && (
         <div className="space-y-6">
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="bg-white rounded-xl border border-stone-200 overflow-hidden">
             <div className="relative">
               <img
                 src={generatedImage.imageUrl}
                 alt="AI lifestyle photo"
-                className="w-full max-h-[600px] object-contain bg-gray-50"
+                className="w-full max-h-[600px] object-contain bg-stone-50"
               />
               <button
                 onClick={() => handleFavorite(generatedImage.id)}
@@ -537,38 +623,38 @@ export default function PhotoStudioPage() {
                 <a
                   href={generatedImage.imageUrl}
                   download={`lifestyle-${generatedImage.scene}-${generatedImage.season}.png`}
-                  className="px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-400 transition"
+                  className="px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-500 transition"
                 >
-                  ⬇ Download
+                  Download
                 </a>
                 <button
                   onClick={() => { setStep("configure"); setGeneratedImage(null); }}
-                  className="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition"
+                  className="px-4 py-2 bg-stone-900 text-white rounded-lg text-sm font-medium hover:bg-stone-800 transition"
                 >
-                  🔄 Generate Another
+                  Generate another
                 </button>
                 <button
                   onClick={() => setStep("configure")}
-                  className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition"
+                  className="px-4 py-2 border border-stone-200 rounded-lg text-sm font-medium text-stone-600 hover:bg-stone-50 transition"
                 >
-                  ✏️ Adjust Settings
+                  Adjust settings
                 </button>
               </div>
 
               {/* Auto-generated caption */}
               {generatedImage.caption && (
-                <div className="border-t border-gray-100 pt-4">
+                <div className="border-t border-stone-100 pt-4">
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-sm font-medium text-gray-500">📝 Ready-to-post caption</h4>
+                    <h4 className="text-sm font-medium text-stone-500">Ready-to-post caption</h4>
                     <button
                       onClick={() => handleCopyCaption(generatedImage.caption + "\n\n" + generatedImage.hashtags)}
-                      className="text-xs text-green-600 font-medium hover:text-green-700"
+                      className="text-xs text-brand-600 font-medium hover:text-brand-700"
                     >
-                      📋 Copy caption + hashtags
+                      Copy caption + hashtags
                     </button>
                   </div>
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{generatedImage.caption}</p>
+                  <div className="bg-stone-50 rounded-lg p-4">
+                    <p className="text-sm text-stone-700 whitespace-pre-wrap">{generatedImage.caption}</p>
                     {generatedImage.hashtags && (
                       <p className="text-sm text-blue-500 mt-2">{generatedImage.hashtags}</p>
                     )}

@@ -12,7 +12,7 @@ AI marketing team for short-term rental owners. The swarm analyzes your listings
 - Sees exactly what's wrong and what to fix
 - This is the hook — free, instant, eye-opening
 
-### 2. Subscribe ($59/mo)
+### 2. Subscribe ($49/mo)
 - Owner picks what they want the swarm to work on:
   - Social content creation
   - Listing optimization (titles, descriptions, tags)
@@ -46,8 +46,8 @@ AI marketing team for short-term rental owners. The swarm analyzes your listings
 ## Why This Works
 - **No API access needed** — we analyze public data and create content. Owner does the posting.
 - **No trust problem** — we never touch their accounts. They control everything.
-- **Immediate value** — free audit shows problems, $59/mo fixes them
-- **Mass market pricing** — $59 is an impulse buy for anyone making $2K+/mo on Airbnb
+- **Immediate value** — free audit shows problems, $49/mo fixes them
+- **Mass market pricing** — $49 is an impulse buy for anyone making $2K+/mo on Airbnb
 - **VAEL moat** — AI-generated lifestyle photography that no competitor can match
 
 ## Target Market
@@ -60,17 +60,17 @@ Short-term rental owners and managers — Airbnb hosts, Vrbo operators, vacation
 | Tier | Price | What they get |
 |------|-------|--------------|
 | Free | $0 | One-time listing audit + score |
-| Pro | $59/mo | Daily/weekly deliverables, content creation, ongoing optimization |
+| Pro | $49/mo | Daily/weekly deliverables, content creation, ongoing optimization |
 | Autopilot | $149/mo (future) | Agent executes directly (when we have API access) |
 
 ## Revenue Math
-- 3,000 clients × $59/mo = $177K MRR = $2.1M ARR
+- 3,000 clients × $49/mo = $177K MRR = $2.1M ARR
 - API cost per client: $5-10/mo → 80%+ gross margin
 - Market penetration needed: 0.17% of US STR market
 - Upsell to $149 Autopilot tier adds expansion revenue later
 
 ## Timeline
-- **Now → April 2026:** MVP — free audit + $59/mo subscription with deliverables
+- **Now → April 2026:** MVP — free audit + $49/mo subscription with deliverables
 - **April 2026:** Start selling. First 50 beta users.
 - **Q2 2026:** Iterate based on feedback. Nail the daily/weekly email brief.
 - **Q3-Q4 2026:** Scale to 300 clients. Add seasonal content, competitive intel.
@@ -97,7 +97,7 @@ Short-term rental owners and managers — Airbnb hosts, Vrbo operators, vacation
 ## Principles
 - Owner does the posting — we create the content
 - Free audit is the hook — show the problem, sell the solution
-- $59 is an impulse buy — no sales team, no demos, self-serve
+- $49 is an impulse buy — no sales team, no demos, self-serve
 - VAEL lifestyle images are the "holy shit" moment
 - The swarm works daily — owner gets briefed, approves, executes
 - Never touch their accounts — zero trust risk at launch
