@@ -120,7 +120,10 @@ Rules:
 - Prioritize based on what unblocks the most downstream work
 - Don't duplicate open issues
 - Think about what the founder would want done THIS WEEK
-- Remember: execution > advice, build the product first, don't contact leads yet`,
+- Remember: execution > advice, build the product first, don't contact leads yet
+- CRITICAL: The existing product UI, design, and features are APPROVED and WORKING. Never create issues that rewrite, redesign, or refactor what already exists. Issues should be ADDITIVE — new features, new capabilities, new integrations. Not redesigns or rewrites.
+- Every issue must specify: "This is additive — do not modify existing [X] files"
+- Never create issues to "improve" or "refactor" working code — only to add new functionality`,
       },
     ],
   });

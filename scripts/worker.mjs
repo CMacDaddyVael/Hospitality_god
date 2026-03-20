@@ -135,6 +135,15 @@ ${allFiles.join("\n")}
 ## Current file contents
 ${fileContents}
 
+## CRITICAL GUARDRAILS — READ BEFORE WRITING ANY CODE
+The product is live and working. Your job is to EXTEND it, not rewrite it.
+
+1. **NEVER rewrite or replace existing files** unless the issue explicitly requires modifying that specific file. If you need to add functionality, create NEW files and import/integrate them.
+2. **NEVER change existing UI components, styles, or layouts** — the current design is approved and shipping.
+3. **NEVER modify existing API routes** unless the issue specifically targets that route. Add new routes instead.
+4. **Preserve all existing behavior** — your changes must be purely additive. If something works today, it must still work identically after your changes.
+5. **If you must modify an existing file** (e.g., adding an import or a new route entry), make the SMALLEST possible change. Do not refactor, restyle, or "improve" surrounding code.
+
 ## Instructions
 1. Implement the issue completely. Write production-quality code.
 2. Output your changes as a series of FILE blocks in this exact format:
@@ -143,10 +152,14 @@ ${fileContents}
 (complete file content here)
 ---ENDFILE---
 
-3. You can create new files or update existing files. For existing files, output the COMPLETE new content.
+3. **Strongly prefer creating NEW files** over modifying existing ones. For existing files you must modify, output the COMPLETE new content with minimal changes from the original.
 4. Include ALL files needed — don't reference files you haven't output.
 5. If you need to update package.json (add dependencies), include the full updated package.json.
 6. After all FILE blocks, add a section:
+
+---CHANGED_FILES---
+For each file, indicate: NEW (created) or MODIFIED (changed existing) and a one-line summary of what changed.
+---END_CHANGED_FILES---
 
 ---COMMIT_MESSAGE---
 (a clear, concise commit message describing what was built)
@@ -156,8 +169,14 @@ ${fileContents}
 ## Summary
 (2-3 bullet points)
 
+## Files changed
+(list each file as NEW or MODIFIED with reason)
+
 ## Test plan
 (how to verify this works)
+
+## Impact on existing features
+(confirm what existing features were NOT touched and still work)
 
 Closes #${issue.number}
 ---END_PR_BODY---
@@ -167,7 +186,9 @@ Rules:
 - Keep it simple and focused on the issue
 - Use the existing tech stack (Node.js, ES modules)
 - Follow patterns already in the codebase
-- If the issue is too large to fully implement, do the most critical part and note what's left in the PR body`,
+- Prefer ADDING new files over modifying existing ones
+- If the issue is too large to fully implement, do the most critical part and note what's left in the PR body
+- Do NOT touch any file that is not directly required by this issue`,
       },
     ],
   });
@@ -240,18 +261,10 @@ Rules:
     run('rm .pr-body-tmp');
 
     console.log(`\nPR created: ${prUrl}`);
-
-    // Auto-merge the PR
-    try {
-      run(`gh pr merge --merge --head "${branchName}"`);
-      console.log("Auto-merged to main");
-    } catch (mergeErr) {
-      console.log("Auto-merge failed (likely conflict) — PR stays open for manual review");
-    }
+    console.log("PR is open for your review — no auto-merge.");
 
     // Switch back to main
     run("git checkout main");
-    run("git pull origin main");
   } catch (err) {
     console.error("Failed to create PR:", err.message);
     run("git checkout main");
