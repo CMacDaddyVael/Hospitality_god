@@ -73,28 +73,34 @@ Return ONLY JSON.`,
     console.log("Location:", locData);
 
     // Step 3: Search for competitor listings using Firecrawl search
-    const searchQuery = `airbnb ${locData.city || ""} ${locData.state || ""} ${locData.propertyType || "vacation rental"} ${locData.bedrooms || ""}+ bedrooms`;
-    console.log("Searching for competitors:", searchQuery);
-
+    // Try multiple search queries to find competitors
+    const userListingId = listingUrl.split("/rooms/")[1]?.split("?")[0] || "NOMATCH";
     let competitorUrls: string[] = [];
-    try {
-      const searchResults = await firecrawl.search(searchQuery, { limit: 8 });
-      competitorUrls = (searchResults.data || [])
-        .map((r: { url?: string }) => r.url || "")
-        .filter((url: string) =>
-          url.includes("airbnb.com/rooms") &&
-          !url.includes(listingUrl.split("/rooms/")[1]?.split("?")[0] || "NOMATCH")
-        )
-        .slice(0, 5);
-    } catch (searchErr) {
-      console.log("Search failed, using Claude to find competitors:", searchErr);
+
+    const searchQueries = [
+      `site:airbnb.com/rooms ${locData.city || ""} ${locData.state || ""}`,
+      `airbnb.com ${locData.city || ""} ${locData.state || ""} ${locData.propertyType || "rental"}`,
+      `airbnb ${locData.city || ""} ${locData.state || ""} vacation rental`,
+    ];
+
+    for (const query of searchQueries) {
+      if (competitorUrls.length >= 3) break;
+      console.log("Searching:", query);
+      try {
+        const searchResults = await firecrawl.search(query, { limit: 10 });
+        const found = (searchResults.data || [])
+          .map((r: { url?: string }) => r.url || "")
+          .filter((url: string) =>
+            url.includes("airbnb.com/rooms/") &&
+            !url.includes(userListingId)
+          );
+        competitorUrls = [...new Set([...competitorUrls, ...found])].slice(0, 5);
+      } catch (err) {
+        console.log("Search query failed:", err);
+      }
     }
 
-    // If search didn't find enough, ask Claude for likely competitor search URLs
-    if (competitorUrls.length < 3) {
-      console.log("Not enough search results, asking Claude for competitor URLs...");
-      // Fall through to Claude-only analysis with the user listing data
-    }
+    console.log(`Found ${competitorUrls.length} competitor URLs`);
 
     // Step 4: Scrape competitor listings (up to 3 to stay within time limits)
     const competitorData: { url: string; markdown: string; title: string; description: string }[] = [];
@@ -119,7 +125,7 @@ Content: ${c.markdown.slice(0, 3000)}
 
     const analysisRes = await client.messages.create({
       model: "claude-sonnet-4-6",
-      max_tokens: 4096,
+      max_tokens: 8192,
       messages: [{
         role: "user",
         content: `You are a competitive intelligence analyst for short-term rentals. Do a head-to-head comparison.
@@ -178,7 +184,14 @@ Compare the user's listing against the competitors (or market if no competitors 
   "pricingInsight": "specific pricing recommendation"
 }
 
-Be specific. Reference actual competitor listings by name. If you scraped real competitors, compare directly. Keep descriptions concise.
+Be specific. Reference actual competitor listings by name. If you scraped real competitors, compare directly.
+
+KEEP IT CONCISE:
+- Each string value max 2 sentences
+- Max 3 competitors
+- Max 5 alerts
+- Max 3 items per array (strengths, weaknesses, etc.)
+- Max 3 market insights
 
 Return ONLY valid JSON.`,
       }],
