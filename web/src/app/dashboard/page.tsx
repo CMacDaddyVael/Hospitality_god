@@ -17,6 +17,10 @@ import {
   ChevronRight,
   BarChart3,
   Clock,
+  Sparkles,
+  ArrowUpRight,
+  RefreshCw,
+  Target,
 } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
@@ -29,7 +33,12 @@ interface AuditData {
     overall_score: number;
     summary: string;
     categories: { name: string; grade: string; score: number }[];
-    top_5_fixes: { priority: number; title: string; description: string; impact: string }[];
+    top_5_fixes: {
+      priority: number;
+      title: string;
+      description: string;
+      impact: string;
+    }[];
   };
   url: string;
 }
@@ -41,6 +50,7 @@ interface ActivityItem {
   detail: string;
   time: string;
   color: string;
+  bg: string;
 }
 
 /* ------------------------------------------------------------------ */
@@ -61,6 +71,13 @@ function scoreTrackColor(score: number) {
   return "#ef4444";
 }
 
+function scoreTrackGlow(score: number) {
+  if (score >= 80) return "rgba(5, 150, 105, 0.2)";
+  if (score >= 60) return "rgba(245, 158, 11, 0.2)";
+  if (score >= 40) return "rgba(249, 115, 22, 0.2)";
+  return "rgba(239, 68, 68, 0.2)";
+}
+
 function barColor(score: number) {
   if (score >= 80) return "bg-emerald-500";
   if (score >= 60) return "bg-amber-400";
@@ -68,56 +85,83 @@ function barColor(score: number) {
   return "bg-red-400";
 }
 
+function gradeColorClass(grade: string) {
+  const m: Record<string, string> = {
+    A: "text-emerald-700 bg-emerald-50 border-emerald-200",
+    B: "text-blue-700 bg-blue-50 border-blue-200",
+    C: "text-amber-700 bg-amber-50 border-amber-200",
+    D: "text-orange-700 bg-orange-50 border-orange-200",
+    F: "text-red-700 bg-red-50 border-red-200",
+  };
+  return m[grade] || m.C;
+}
+
 /* ------------------------------------------------------------------ */
 /*  Sub-components                                                     */
 /* ------------------------------------------------------------------ */
 
-/** Circular SVG gauge */
-function ScoreGauge({ score, size = 128 }: { score: number; size?: number }) {
-  const strokeWidth = 10;
+/** Circular SVG gauge with glow and label */
+function ScoreGauge({ score, size = 140 }: { score: number; size?: number }) {
+  const strokeWidth = 12;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (score / 100) * circumference;
 
   return (
-    <div className="relative" style={{ width: size, height: size }}>
-      <svg width={size} height={size} className="-rotate-90">
-        {/* Background track */}
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          stroke="#E7E5E4"
-          strokeWidth={strokeWidth}
+    <div className="relative flex flex-col items-center">
+      <div className="relative" style={{ width: size, height: size }}>
+        {/* Glow */}
+        <div
+          className="absolute inset-2 rounded-full transition-all duration-1000"
+          style={{ boxShadow: `0 0 40px ${scoreTrackGlow(score)}` }}
         />
-        {/* Score arc */}
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          stroke={scoreTrackColor(score)}
-          strokeWidth={strokeWidth}
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
-          className="transition-all duration-1000 ease-out"
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className={`text-3xl font-bold font-mono tracking-tight ${scoreColor(score)}`}>
-          {score}
-        </span>
-        <span className="text-[11px] text-stone-400 font-medium mt-0.5">/ 100</span>
+        <svg width={size} height={size} className="-rotate-90">
+          {/* Background track */}
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            fill="none"
+            stroke="#F5F5F4"
+            strokeWidth={strokeWidth}
+          />
+          {/* Score arc */}
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            fill="none"
+            stroke={scoreTrackColor(score)}
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            strokeDashoffset={offset}
+            className="transition-all duration-1000 ease-out"
+          />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span
+            className={`text-4xl font-bold font-mono tracking-tight ${scoreColor(score)}`}
+          >
+            {score}
+          </span>
+          <span className="text-xs text-stone-400 font-medium mt-0.5">
+            / 100
+          </span>
+        </div>
       </div>
+      <span className="text-xs font-medium text-stone-400 mt-3">
+        Listing Score
+      </span>
     </div>
   );
 }
 
 /** Skeleton placeholder */
 function Skeleton({ className = "" }: { className?: string }) {
-  return <div className={`animate-pulse rounded-lg bg-stone-100 ${className}`} />;
+  return (
+    <div className={`animate-pulse rounded-xl bg-stone-100 ${className}`} />
+  );
 }
 
 /** Stagger wrapper for fade-in animations */
@@ -148,7 +192,7 @@ function FadeIn({
 }
 
 /* ------------------------------------------------------------------ */
-/*  Mock activity feed (would come from API in production)             */
+/*  Mock activity feed                                                 */
 /* ------------------------------------------------------------------ */
 
 const MOCK_ACTIVITY: ActivityItem[] = [
@@ -157,45 +201,50 @@ const MOCK_ACTIVITY: ActivityItem[] = [
     icon: CheckCircle2,
     label: "Listing audit completed",
     detail: "Identified 5 optimization opportunities",
-    time: "2 hours ago",
+    time: "2h ago",
     color: "text-emerald-500",
+    bg: "bg-emerald-50",
   },
   {
     id: 2,
     icon: Image,
     label: "Generated 2 lifestyle photos",
     detail: "Pool sunset scene, Morning coffee patio",
-    time: "4 hours ago",
+    time: "4h ago",
     color: "text-brand-500",
+    bg: "bg-brand-50",
   },
   {
     id: 3,
     icon: MessageSquare,
     label: "Drafted review response",
     detail: "5-star review from Sarah M.",
-    time: "6 hours ago",
+    time: "6h ago",
     color: "text-blue-500",
+    bg: "bg-blue-50",
   },
   {
     id: 4,
     icon: FileText,
     label: "Social post created",
     detail: "Instagram reel concept for weekend",
-    time: "Yesterday",
+    time: "1d ago",
     color: "text-violet-500",
+    bg: "bg-violet-50",
   },
   {
     id: 5,
     icon: BarChart3,
     label: "Competitor analysis refreshed",
     detail: "Tracked 4 nearby listings",
-    time: "Yesterday",
+    time: "1d ago",
     color: "text-amber-500",
+    bg: "bg-amber-50",
   },
 ];
 
 /* ------------------------------------------------------------------ */
-/*  Quick action cards config                                          */
+/*  Quick action cards                                                 */
 /* ------------------------------------------------------------------ */
 
 const QUICK_ACTIONS = [
@@ -203,22 +252,34 @@ const QUICK_ACTIONS = [
     href: "/dashboard/deliverables",
     icon: Inbox,
     title: "Content Inbox",
-    description: "Review social posts, listing updates, and review responses your agent prepared.",
+    description:
+      "Review social posts, listing updates, and review responses your agent prepared.",
     cta: "Open inbox",
+    accent: "group-hover:from-rose-500/5 group-hover:to-orange-500/5",
+    iconHoverBg: "group-hover:bg-rose-50 group-hover:border-rose-100",
+    iconHoverColor: "group-hover:text-rose-500",
   },
   {
     href: "/dashboard/photos",
     icon: Camera,
     title: "Photo Studio",
-    description: "Generate lifestyle photos of guests enjoying your property with AI casting.",
+    description:
+      "Generate lifestyle photos of guests enjoying your property with AI casting.",
     cta: "Create photos",
+    accent: "group-hover:from-violet-500/5 group-hover:to-blue-500/5",
+    iconHoverBg: "group-hover:bg-violet-50 group-hover:border-violet-100",
+    iconHoverColor: "group-hover:text-violet-500",
   },
   {
     href: "/dashboard/competitors",
     icon: Shield,
     title: "Competitive Intel",
-    description: "See how you stack up against nearby listings and get market-change alerts.",
+    description:
+      "See how you stack up against nearby listings and get market-change alerts.",
     cta: "View market",
+    accent: "group-hover:from-amber-500/5 group-hover:to-yellow-500/5",
+    iconHoverBg: "group-hover:bg-amber-50 group-hover:border-amber-100",
+    iconHoverColor: "group-hover:text-amber-500",
   },
 ];
 
@@ -233,18 +294,16 @@ export default function DashboardPage() {
   useEffect(() => {
     const stored = sessionStorage.getItem("audit_result");
     if (stored) setAuditData(JSON.parse(stored));
-    // Simulate brief loading to show skeleton then reveal
     const t = setTimeout(() => setIsLoading(false), 400);
     return () => clearTimeout(t);
   }, []);
 
   const topFix = auditData?.audit.top_5_fixes?.[0];
 
-  /* Agent status summary line */
   const agentSummary = useMemo(() => {
     if (!auditData) return null;
     const fixes = auditData.audit.top_5_fixes?.length ?? 0;
-    return `Your agent checked ${auditData.audit.categories.length} listing categories, found ${fixes} optimization${fixes !== 1 ? "s" : ""}, and drafted content for this week.`;
+    return `Checked ${auditData.audit.categories.length} listing categories, found ${fixes} optimization${fixes !== 1 ? "s" : ""}, and drafted content for this week.`;
   }, [auditData]);
 
   /* ---- Loading skeleton ---- */
@@ -253,15 +312,15 @@ export default function DashboardPage() {
       <div className="space-y-6">
         <Skeleton className="h-12 w-80" />
         <Skeleton className="h-5 w-60" />
-        <Skeleton className="h-16 w-full rounded-xl" />
-        <div className="grid md:grid-cols-3 gap-4">
-          <Skeleton className="h-52 rounded-xl" />
-          <Skeleton className="h-52 rounded-xl md:col-span-2" />
+        <Skeleton className="h-20 w-full" />
+        <div className="grid md:grid-cols-3 gap-5">
+          <Skeleton className="h-56" />
+          <Skeleton className="h-56 md:col-span-2" />
         </div>
-        <div className="grid sm:grid-cols-3 gap-4">
-          <Skeleton className="h-44 rounded-xl" />
-          <Skeleton className="h-44 rounded-xl" />
-          <Skeleton className="h-44 rounded-xl" />
+        <div className="grid sm:grid-cols-3 gap-5">
+          <Skeleton className="h-48" />
+          <Skeleton className="h-48" />
+          <Skeleton className="h-48" />
         </div>
       </div>
     );
@@ -273,52 +332,104 @@ export default function DashboardPage() {
       {/*  Header                                                       */}
       {/* ------------------------------------------------------------ */}
       <FadeIn>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-stone-900">
-            {auditData ? auditData.audit.property_name : "Welcome back"}
-          </h1>
-          <p className="text-stone-500 mt-1 text-sm leading-relaxed">
-            Here&apos;s what your AI marketing team has been working on.
-          </p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="font-heading text-2xl font-bold tracking-tight text-stone-900">
+              {auditData ? auditData.audit.property_name : "Welcome back"}
+            </h1>
+            <p className="text-stone-500 mt-1 text-sm leading-relaxed">
+              Here&apos;s what your AI marketing team has been working on.
+            </p>
+          </div>
+          {auditData && (
+            <Link
+              href="/dashboard/deliverables"
+              className="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-700 transition-colors"
+            >
+              View deliverables
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          )}
         </div>
       </FadeIn>
 
       {/* ------------------------------------------------------------ */}
-      {/*  Agent Status Bar                                             */}
+      {/*  Agent Status Banner                                          */}
       {/* ------------------------------------------------------------ */}
       <FadeIn delay={60}>
-        <div className="relative overflow-hidden rounded-xl border border-stone-200 bg-gradient-to-r from-stone-900 to-stone-800 px-5 py-4">
-          {/* Subtle grid overlay */}
-          <div className="pointer-events-none absolute inset-0 opacity-[0.04]" style={{
-            backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h40v40' fill='none' stroke='white' stroke-width='.5'/%3E%3C/svg%3E\")",
-          }} />
-          <div className="relative flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500/20 ring-1 ring-brand-500/30">
-              <Activity className="h-4 w-4 text-brand-400" />
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-stone-900 via-stone-900 to-stone-800 p-6 shadow-lg shadow-stone-900/10">
+          {/* Grid pattern */}
+          <div
+            className="pointer-events-none absolute inset-0 opacity-[0.03]"
+            style={{
+              backgroundImage:
+                "linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)",
+              backgroundSize: "32px 32px",
+            }}
+          />
+          {/* Brand glow */}
+          <div className="absolute -top-20 -right-20 w-60 h-60 rounded-full bg-brand-600/10 blur-[60px]" />
+
+          <div className="relative flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500/20 to-brand-600/20 ring-1 ring-brand-500/20">
+              <Activity className="h-5 w-5 text-brand-400" />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-0.5">
+              <div className="flex items-center gap-2.5 mb-1">
                 <span className="relative flex h-2 w-2">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
                 </span>
-                <span className="text-xs font-semibold uppercase tracking-wider text-stone-400">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.15em] text-emerald-400">
                   Agent active
                 </span>
               </div>
-              <p className="text-sm text-stone-300 leading-relaxed truncate">
+              <p className="text-sm text-stone-300 leading-relaxed">
                 {agentSummary ??
                   "Your agent is ready. Run an audit to start optimizing your listings."}
               </p>
             </div>
             <Link
               href="/dashboard/deliverables"
-              className="hidden sm:inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-3.5 py-2 text-xs font-medium text-white backdrop-blur transition hover:bg-white/20"
+              className="hidden sm:inline-flex items-center gap-1.5 rounded-lg bg-white/10 hover:bg-white/[0.15] border border-white/[0.08] px-4 py-2.5 text-xs font-medium text-white backdrop-blur-sm transition-all active:scale-[0.98]"
             >
               View deliverables
               <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
+
+          {/* Stats row inside banner */}
+          {auditData && (
+            <div className="relative mt-5 pt-5 border-t border-white/[0.06] grid grid-cols-3 gap-4">
+              <div>
+                <p className="text-[10px] font-medium uppercase tracking-wider text-white/30 mb-1">
+                  Score
+                </p>
+                <p className="text-lg font-bold font-mono text-white">
+                  {auditData.audit.overall_score}
+                  <span className="text-white/30 text-sm font-normal">
+                    /100
+                  </span>
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] font-medium uppercase tracking-wider text-white/30 mb-1">
+                  Categories
+                </p>
+                <p className="text-lg font-bold font-mono text-white">
+                  {auditData.audit.categories.length}
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] font-medium uppercase tracking-wider text-white/30 mb-1">
+                  Fixes found
+                </p>
+                <p className="text-lg font-bold font-mono text-white">
+                  {auditData.audit.top_5_fixes?.length ?? 0}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </FadeIn>
 
@@ -327,31 +438,31 @@ export default function DashboardPage() {
       {/* ------------------------------------------------------------ */}
       {topFix && (
         <FadeIn delay={120}>
-          <div className="group relative overflow-hidden rounded-xl border border-brand-200 bg-gradient-to-br from-brand-50/80 via-white to-white p-6 transition-all hover:shadow-md hover:border-brand-300">
-            {/* Decorative accent */}
-            <div className="absolute top-0 left-0 h-full w-1 bg-brand-500 rounded-l-xl" />
-            <div className="flex items-start gap-4 pl-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-100">
-                <Zap className="h-5 w-5 text-brand-600" />
+          <div className="group relative overflow-hidden rounded-2xl border border-brand-200/80 bg-gradient-to-br from-brand-50/60 via-white to-white p-6 transition-all duration-300 hover:shadow-lg hover:shadow-brand-100/50 hover:border-brand-300">
+            {/* Left accent bar */}
+            <div className="absolute top-0 left-0 h-full w-1 bg-gradient-to-b from-brand-500 to-brand-400 rounded-l-2xl" />
+            <div className="flex items-start gap-4 pl-4">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-100 border border-brand-200/50">
+                <Target className="h-5 w-5 text-brand-600" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-brand-600 mb-1">
+                <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-brand-600 mb-1.5">
                   This week&apos;s priority
                 </p>
-                <h3 className="text-base font-semibold tracking-tight text-stone-900 mb-1.5">
+                <h3 className="font-heading text-base font-semibold tracking-tight text-stone-900 mb-1.5">
                   {topFix.title}
                 </h3>
                 <p className="text-sm text-stone-500 leading-relaxed mb-3">
                   {topFix.description}
                 </p>
-                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full">
                   <TrendingUp className="h-3 w-3" />
                   {topFix.impact}
                 </span>
               </div>
               <Link
                 href="/dashboard/deliverables"
-                className="shrink-0 inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-brand-700 hover:shadow-md group-hover:translate-x-0"
+                className="shrink-0 inline-flex items-center gap-1.5 rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-brand-700 hover:shadow-md active:scale-[0.98]"
               >
                 View fix
                 <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
@@ -365,45 +476,64 @@ export default function DashboardPage() {
       {/*  Score + Category Breakdown                                    */}
       {/* ------------------------------------------------------------ */}
       <FadeIn delay={180}>
-        <div className="grid md:grid-cols-3 gap-4">
+        <div className="grid md:grid-cols-3 gap-5">
           {/* Score gauge card */}
-          <div className="bg-white rounded-xl border border-stone-200 p-6 flex flex-col items-center justify-center transition-all hover:shadow-md hover:border-stone-300">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-stone-400 mb-4 self-start">
-              Listing Score
-            </p>
+          <div className="bg-white rounded-2xl border border-stone-200/80 p-6 flex flex-col items-center justify-center transition-all duration-300 hover:shadow-lg hover:shadow-stone-200/40 hover:border-stone-300 hover:-translate-y-0.5">
             {auditData ? (
               <ScoreGauge score={auditData.audit.overall_score} />
             ) : (
-              <div className="flex flex-col items-center justify-center py-4">
-                <div className="relative" style={{ width: 128, height: 128 }}>
-                  <svg width={128} height={128} className="-rotate-90">
-                    <circle cx={64} cy={64} r={54} fill="none" stroke="#E7E5E4" strokeWidth={10} />
+              <div className="flex flex-col items-center justify-center py-6">
+                <div className="relative" style={{ width: 140, height: 140 }}>
+                  <svg width={140} height={140} className="-rotate-90">
+                    <circle
+                      cx={70}
+                      cy={70}
+                      r={64}
+                      fill="none"
+                      stroke="#F5F5F4"
+                      strokeWidth={12}
+                    />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-3xl font-bold font-mono text-stone-200">&mdash;</span>
+                    <span className="text-4xl font-bold font-mono text-stone-200">
+                      &mdash;
+                    </span>
                   </div>
                 </div>
-                <p className="text-xs text-stone-400 mt-3">Run an audit to get your score</p>
+                <p className="text-xs text-stone-400 mt-4 text-center">
+                  Run an audit to get your score
+                </p>
               </div>
             )}
           </div>
 
           {/* Categories breakdown */}
-          <div className="bg-white rounded-xl border border-stone-200 p-6 md:col-span-2 transition-all hover:shadow-md hover:border-stone-300">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-stone-400 mb-4">
-              Category Breakdown
-            </p>
+          <div className="bg-white rounded-2xl border border-stone-200/80 p-6 md:col-span-2 transition-all duration-300 hover:shadow-lg hover:shadow-stone-200/40 hover:border-stone-300">
+            <div className="flex items-center justify-between mb-5">
+              <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-stone-400">
+                Category Breakdown
+              </p>
+              {auditData && (
+                <span className="text-xs text-stone-400 font-mono">
+                  {auditData.audit.categories.length} categories
+                </span>
+              )}
+            </div>
             {auditData ? (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {auditData.audit.categories.map((cat) => (
                   <div key={cat.name} className="group/bar">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-sm font-medium text-stone-700">{cat.name}</span>
-                      <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-stone-700">
+                        {cat.name}
+                      </span>
+                      <div className="flex items-center gap-2.5">
                         <span className="text-xs font-mono font-semibold text-stone-500">
                           {cat.score}
                         </span>
-                        <span className="text-[10px] font-semibold text-stone-400 bg-stone-100 rounded px-1.5 py-0.5">
+                        <span
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${gradeColorClass(cat.grade)}`}
+                        >
                           {cat.grade}
                         </span>
                       </div>
@@ -418,10 +548,15 @@ export default function DashboardPage() {
                 ))}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <BarChart3 className="h-8 w-8 text-stone-200 mb-3" />
-                <p className="text-sm text-stone-400">
-                  Category scores will appear after your first audit
+              <div className="flex flex-col items-center justify-center py-14 text-center">
+                <div className="w-14 h-14 rounded-2xl bg-stone-50 border border-stone-100 flex items-center justify-center mb-4">
+                  <BarChart3 className="h-6 w-6 text-stone-300" />
+                </div>
+                <p className="text-sm font-medium text-stone-400 mb-1">
+                  No data yet
+                </p>
+                <p className="text-xs text-stone-400">
+                  Category scores appear after your first audit
                 </p>
               </div>
             )}
@@ -434,32 +569,41 @@ export default function DashboardPage() {
       {/* ------------------------------------------------------------ */}
       <FadeIn delay={240}>
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-stone-400 mb-3">
+          <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-stone-400 mb-4">
             Quick Actions
           </p>
-          <div className="grid sm:grid-cols-3 gap-4">
-            {QUICK_ACTIONS.map((action, i) => {
+          <div className="grid sm:grid-cols-3 gap-5">
+            {QUICK_ACTIONS.map((action) => {
               const Icon = action.icon;
               return (
                 <Link
                   key={action.href}
                   href={action.href}
-                  className="group relative bg-white rounded-xl border border-stone-200 p-6 transition-all duration-200 hover:shadow-md hover:border-stone-300 hover:-translate-y-0.5"
-                  style={{ animationDelay: `${i * 60}ms` }}
+                  className={`group relative bg-white rounded-2xl border border-stone-200/80 p-6 transition-all duration-300 hover:shadow-lg hover:shadow-stone-200/40 hover:border-stone-300 hover:-translate-y-1 overflow-hidden`}
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-stone-50 border border-stone-100 mb-4 transition-colors group-hover:bg-brand-50 group-hover:border-brand-100">
-                    <Icon className="h-5 w-5 text-stone-400 transition-colors group-hover:text-brand-500" />
+                  {/* Hover gradient fill */}
+                  <div
+                    className={`absolute inset-0 bg-gradient-to-br from-transparent to-transparent ${action.accent} transition-all duration-300 rounded-2xl`}
+                  />
+                  <div className="relative">
+                    <div
+                      className={`flex h-11 w-11 items-center justify-center rounded-xl bg-stone-50 border border-stone-100 mb-5 transition-all duration-300 ${action.iconHoverBg}`}
+                    >
+                      <Icon
+                        className={`h-5 w-5 text-stone-400 transition-colors duration-300 ${action.iconHoverColor}`}
+                      />
+                    </div>
+                    <h3 className="font-heading text-sm font-semibold tracking-tight text-stone-900 mb-1.5">
+                      {action.title}
+                    </h3>
+                    <p className="text-xs text-stone-500 leading-relaxed mb-5">
+                      {action.description}
+                    </p>
+                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-600 transition-all group-hover:gap-2.5">
+                      {action.cta}
+                      <ArrowUpRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                    </span>
                   </div>
-                  <h3 className="text-sm font-semibold tracking-tight text-stone-900 mb-1">
-                    {action.title}
-                  </h3>
-                  <p className="text-xs text-stone-500 leading-relaxed mb-4">
-                    {action.description}
-                  </p>
-                  <span className="inline-flex items-center gap-1 text-xs font-medium text-brand-600 transition-all group-hover:gap-2">
-                    {action.cta}
-                    <ChevronRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
-                  </span>
                 </Link>
               );
             })}
@@ -471,14 +615,14 @@ export default function DashboardPage() {
       {/*  Recent Agent Activity                                         */}
       {/* ------------------------------------------------------------ */}
       <FadeIn delay={300}>
-        <div className="bg-white rounded-xl border border-stone-200 p-6 transition-all hover:shadow-md hover:border-stone-300">
-          <div className="flex items-center justify-between mb-5">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-stone-400">
+        <div className="bg-white rounded-2xl border border-stone-200/80 p-6 transition-all duration-300 hover:shadow-lg hover:shadow-stone-200/40 hover:border-stone-300">
+          <div className="flex items-center justify-between mb-6">
+            <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-stone-400">
               Recent Activity
             </p>
             <Link
               href="/dashboard/deliverables"
-              className="text-xs font-medium text-brand-600 hover:text-brand-700 transition inline-flex items-center gap-1"
+              className="text-xs font-semibold text-brand-600 hover:text-brand-700 transition inline-flex items-center gap-1.5"
             >
               View all
               <ArrowRight className="h-3 w-3" />
@@ -487,26 +631,25 @@ export default function DashboardPage() {
 
           <div className="relative">
             {/* Vertical timeline line */}
-            <div className="absolute left-[15px] top-2 bottom-2 w-px bg-stone-100" />
+            <div className="absolute left-[19px] top-3 bottom-3 w-px bg-gradient-to-b from-stone-200 via-stone-100 to-transparent" />
 
-            <div className="space-y-0">
-              {MOCK_ACTIVITY.map((item, i) => {
+            <div className="space-y-1">
+              {MOCK_ACTIVITY.map((item) => {
                 const Icon = item.icon;
                 return (
                   <div
                     key={item.id}
-                    className="group relative flex items-start gap-4 py-3 first:pt-0 last:pb-0"
-                    style={{
-                      animationDelay: `${300 + i * 50}ms`,
-                    }}
+                    className="group relative flex items-start gap-4 py-3 px-2 -mx-2 rounded-xl hover:bg-stone-50/70 transition-colors first:pt-1 last:pb-1"
                   >
                     {/* Timeline dot */}
-                    <div className="relative z-10 flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full bg-white border border-stone-200 transition-all group-hover:border-stone-300 group-hover:shadow-sm">
-                      <Icon className={`h-3.5 w-3.5 ${item.color}`} />
+                    <div
+                      className={`relative z-10 flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-xl ${item.bg} border border-stone-100 transition-all group-hover:shadow-sm group-hover:scale-105`}
+                    >
+                      <Icon className={`h-4 w-4 ${item.color}`} />
                     </div>
 
                     {/* Content */}
-                    <div className="flex-1 min-w-0 pt-0.5">
+                    <div className="flex-1 min-w-0 pt-1">
                       <p className="text-sm font-medium text-stone-800 leading-snug">
                         {item.label}
                       </p>
@@ -516,9 +659,11 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Timestamp */}
-                    <div className="flex items-center gap-1 pt-1 shrink-0">
+                    <div className="flex items-center gap-1.5 pt-1.5 shrink-0">
                       <Clock className="h-3 w-3 text-stone-300" />
-                      <span className="text-[11px] font-mono text-stone-400">{item.time}</span>
+                      <span className="text-[11px] font-mono text-stone-400">
+                        {item.time}
+                      </span>
                     </div>
                   </div>
                 );

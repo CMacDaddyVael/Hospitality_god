@@ -2,7 +2,191 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Sparkles, BarChart3, Image, MessageSquare, Calendar, Zap } from "lucide-react";
+import {
+  ArrowRight,
+  BarChart3,
+  Image,
+  MessageSquare,
+  Calendar,
+  Zap,
+  Star,
+  CheckCircle2,
+  TrendingUp,
+  Shield,
+  Sparkles,
+  Search,
+  ChevronRight,
+  ArrowUpRight,
+} from "lucide-react";
+
+/* ------------------------------------------------------------------ */
+/*  Animated gradient mesh background                                  */
+/* ------------------------------------------------------------------ */
+function HeroGradient() {
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden">
+      {/* Primary warm gradient */}
+      <div
+        className="absolute -top-1/2 -right-1/4 w-[800px] h-[800px] rounded-full opacity-[0.12]"
+        style={{
+          background:
+            "radial-gradient(circle, #e11d48 0%, #f97316 40%, transparent 70%)",
+          animation: "float 20s ease-in-out infinite",
+        }}
+      />
+      {/* Secondary cooler accent */}
+      <div
+        className="absolute -bottom-1/3 -left-1/4 w-[600px] h-[600px] rounded-full opacity-[0.08]"
+        style={{
+          background:
+            "radial-gradient(circle, #f97316 0%, #e11d48 50%, transparent 70%)",
+          animation: "float 25s ease-in-out infinite reverse",
+        }}
+      />
+      {/* Subtle dot grid */}
+      <div className="absolute inset-0 bg-dots opacity-40" />
+      <style jsx>{`
+        @keyframes float {
+          0%,
+          100% {
+            transform: translate(0, 0) scale(1);
+          }
+          33% {
+            transform: translate(30px, -20px) scale(1.05);
+          }
+          66% {
+            transform: translate(-20px, 15px) scale(0.95);
+          }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Spinner                                                            */
+/* ------------------------------------------------------------------ */
+function Spinner() {
+  return (
+    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+        fill="none"
+      />
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+      />
+    </svg>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Data                                                               */
+/* ------------------------------------------------------------------ */
+
+const FEATURES = [
+  {
+    icon: BarChart3,
+    title: "Listing Optimization",
+    desc: "Rewritten titles, descriptions, and tags tuned for Airbnb's search algorithm. Every word earns its place.",
+    accent: "from-rose-500/10 to-orange-500/10",
+    iconBg: "bg-rose-50",
+    iconColor: "text-rose-600",
+  },
+  {
+    icon: Image,
+    title: "Lifestyle Photos",
+    desc: "AI-generated photos of real people enjoying your property. Seasonal updates keep your listing fresh.",
+    accent: "from-violet-500/10 to-blue-500/10",
+    iconBg: "bg-violet-50",
+    iconColor: "text-violet-600",
+  },
+  {
+    icon: MessageSquare,
+    title: "Review Responses",
+    desc: "Drafted replies to every guest review -- positive and negative -- in your voice. Posted within hours.",
+    accent: "from-blue-500/10 to-cyan-500/10",
+    iconBg: "bg-blue-50",
+    iconColor: "text-blue-600",
+  },
+  {
+    icon: Calendar,
+    title: "Social Content",
+    desc: "Instagram and TikTok posts with captions, hashtags, and images. A content calendar, executed for you.",
+    accent: "from-amber-500/10 to-yellow-500/10",
+    iconBg: "bg-amber-50",
+    iconColor: "text-amber-600",
+  },
+  {
+    icon: Zap,
+    title: "Seasonal Refreshes",
+    desc: "Updated copy and photos that match the season. Winter cozy, summer vibes, holiday charm -- automatically.",
+    accent: "from-emerald-500/10 to-teal-500/10",
+    iconBg: "bg-emerald-50",
+    iconColor: "text-emerald-600",
+  },
+  {
+    icon: Shield,
+    title: "Competitive Intel",
+    desc: "How you compare to nearby listings, what they changed, and what moves the needle in your market.",
+    accent: "from-stone-500/10 to-stone-400/10",
+    iconBg: "bg-stone-100",
+    iconColor: "text-stone-600",
+  },
+];
+
+const STEPS = [
+  {
+    step: "01",
+    title: "Paste your listing URL",
+    desc: "Drop your Airbnb or Vrbo link. Our AI audits your title, description, photos, reviews, and competitive positioning in under 60 seconds.",
+  },
+  {
+    step: "02",
+    title: "Get your score and fixes",
+    desc: "See exactly what's holding you back -- and what to fix first. Plus a free AI-generated lifestyle photo of your property, ready to post.",
+  },
+  {
+    step: "03",
+    title: "Your agent delivers weekly",
+    desc: "Every week, your AI marketing team delivers optimized copy, lifestyle photos, social content, and review responses. You just approve and post.",
+  },
+];
+
+const SOCIAL_PROOF = [
+  { metric: "2,400+", label: "Listings audited" },
+  { metric: "37%", label: "Avg. booking increase" },
+  { metric: "4.9", label: "Host satisfaction" },
+  { metric: "<60s", label: "Audit turnaround" },
+];
+
+const FREE_FEATURES = [
+  "Full listing analysis",
+  "Score out of 100",
+  "Top 5 critical fixes",
+  "One AI lifestyle photo preview",
+];
+
+const PRO_FEATURES = [
+  "Everything in Free Audit",
+  "Weekly content deliverables",
+  "AI lifestyle photos (unlimited)",
+  "Review response drafts",
+  "Social media content + captions",
+  "Seasonal listing updates",
+  "Monthly performance reports",
+];
+
+/* ------------------------------------------------------------------ */
+/*  Page                                                               */
+/* ------------------------------------------------------------------ */
 
 export default function LandingPage() {
   const [url, setUrl] = useState("");
@@ -22,7 +206,8 @@ export default function LandingPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: url.trim() }),
       });
-      if (!res.ok) throw new Error("Audit failed. Check the URL and try again.");
+      if (!res.ok)
+        throw new Error("Audit failed. Check the URL and try again.");
       const data = await res.json();
       sessionStorage.setItem("audit_result", JSON.stringify(data));
       router.push("/audit");
@@ -34,72 +219,126 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen">
-      {/* Nav */}
-      <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-xl border-b border-stone-200/60">
-        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-          <span className="text-lg font-semibold tracking-tight text-stone-900">Hospitality God</span>
-          <div className="hidden md:flex items-center gap-8 text-sm text-stone-500">
-            <a href="#features" className="hover:text-stone-900 transition">Features</a>
-            <a href="#pricing" className="hover:text-stone-900 transition">Pricing</a>
+    <div className="min-h-screen bg-[#FAF9F7]">
+      {/* ============================================================ */}
+      {/*  Nav                                                          */}
+      {/* ============================================================ */}
+      <nav className="fixed top-0 w-full z-50 bg-[#FAF9F7]/80 backdrop-blur-xl border-b border-stone-200/50">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-sm">
+              <span className="text-white text-sm font-bold">H</span>
+            </div>
+            <span className="text-[17px] font-heading font-semibold tracking-tight text-stone-900">
+              Hospitality God
+            </span>
           </div>
-          <a href="#audit" className="text-sm font-medium text-brand-600 hover:text-brand-700 transition">
-            Free Audit <ArrowRight className="inline w-3.5 h-3.5 ml-0.5" />
+          <div className="hidden md:flex items-center gap-8 text-sm text-stone-500">
+            <a
+              href="#features"
+              className="hover:text-stone-900 transition-colors"
+            >
+              Features
+            </a>
+            <a
+              href="#how-it-works"
+              className="hover:text-stone-900 transition-colors"
+            >
+              How it works
+            </a>
+            <a
+              href="#pricing"
+              className="hover:text-stone-900 transition-colors"
+            >
+              Pricing
+            </a>
+          </div>
+          <a
+            href="#audit"
+            className="group inline-flex items-center gap-1.5 text-sm font-medium text-white bg-stone-900 hover:bg-stone-800 px-4 py-2 rounded-lg transition-all active:scale-[0.98] shadow-sm"
+          >
+            Free Audit
+            <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
           </a>
         </div>
       </nav>
 
-      {/* Hero */}
-      <section className="relative pt-32 pb-20 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-brand-50/40 via-transparent to-transparent" />
+      {/* ============================================================ */}
+      {/*  Hero                                                         */}
+      {/* ============================================================ */}
+      <section className="relative pt-36 pb-24 overflow-hidden">
+        <HeroGradient />
         <div className="relative max-w-4xl mx-auto px-6 text-center">
+          {/* Badge */}
           <div className="animate-fade-in">
-            <div className="inline-flex items-center gap-2 bg-brand-50 border border-brand-200 rounded-full px-4 py-1.5 mb-8">
-              <Sparkles className="w-3.5 h-3.5 text-brand-500" />
-              <span className="text-brand-700 text-sm font-medium">AI-powered listing optimization</span>
+            <div className="inline-flex items-center gap-2 glass rounded-full px-4 py-1.5 mb-8 shadow-sm">
+              <div className="flex items-center gap-1">
+                <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
+                <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
+                <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
+                <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
+                <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
+              </div>
+              <span className="text-stone-600 text-sm font-medium">
+                Trusted by 2,400+ hosts
+              </span>
             </div>
           </div>
 
-          <h1 className="animate-slide-up text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-stone-900 leading-[1.1] mb-6">
-            Your Airbnb listings,
+          {/* Heading */}
+          <h1 className="animate-slide-up font-heading text-5xl sm:text-6xl lg:text-[4.5rem] font-bold tracking-tight leading-[1.08] mb-6">
+            <span className="text-gradient-subtle">Your Airbnb listings,</span>
             <br />
-            <span className="text-brand-600">perfected by AI.</span>
+            <span className="text-gradient">perfected by AI.</span>
           </h1>
 
-          <p className="animate-slide-up-delay text-lg sm:text-xl text-stone-500 max-w-2xl mx-auto mb-10 leading-relaxed">
-            A full marketing team for your rental — listing optimization, lifestyle photos, social content, review responses — all for under $600 a year.
+          {/* Subheading */}
+          <p className="animate-slide-up-delay text-lg sm:text-xl text-stone-500 max-w-2xl mx-auto mb-12 leading-relaxed">
+            A full marketing team for your rental -- listing optimization,
+            lifestyle photos, social content, review responses -- all for under{" "}
+            <span className="font-mono font-semibold text-stone-700">$600</span>{" "}
+            a year.
           </p>
 
           {/* Audit Form */}
-          <form onSubmit={handleAudit} id="audit" className="animate-slide-up-delay-2 max-w-xl mx-auto">
-            <div className="flex flex-col sm:flex-row gap-3">
-              <input
-                type="url"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                placeholder="Paste your Airbnb or Vrbo URL..."
-                className="flex-1 px-5 py-3.5 bg-white border border-stone-300 rounded-xl text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent text-base shadow-sm"
-                required
-              />
+          <form
+            onSubmit={handleAudit}
+            id="audit"
+            className="animate-slide-up-delay-2 max-w-xl mx-auto"
+          >
+            <div className="relative flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+                <input
+                  type="url"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  placeholder="Paste your Airbnb or Vrbo URL..."
+                  className="w-full pl-11 pr-5 py-4 bg-white border border-stone-200 rounded-xl text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-400 text-base shadow-sm glow-soft transition-all"
+                  required
+                />
+              </div>
               <button
                 type="submit"
                 disabled={loading}
-                className="px-7 py-3.5 bg-brand-600 hover:bg-brand-700 disabled:bg-brand-300 text-white font-medium rounded-xl transition-all shadow-sm hover:shadow-md active:scale-[0.98] whitespace-nowrap"
+                className="group px-7 py-4 bg-brand-600 hover:bg-brand-700 disabled:bg-brand-300 text-white font-semibold rounded-xl transition-all shadow-md hover:shadow-lg active:scale-[0.98] whitespace-nowrap"
               >
                 {loading ? (
                   <span className="flex items-center gap-2">
-                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
+                    <Spinner />
                     Analyzing...
                   </span>
                 ) : (
-                  <>Free Audit <ArrowRight className="inline w-4 h-4 ml-1" /></>
+                  <span className="flex items-center gap-2">
+                    Free Audit
+                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                  </span>
                 )}
               </button>
             </div>
-            {error && <p className="mt-3 text-red-500 text-sm">{error}</p>}
+            {error && (
+              <p className="mt-3 text-red-500 text-sm font-medium">{error}</p>
+            )}
             <p className="mt-4 text-stone-400 text-sm">
               No signup required. Results in 60 seconds.
             </p>
@@ -107,129 +346,263 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Features */}
-      <section id="features" className="py-20 bg-white border-y border-stone-200">
+      {/* ============================================================ */}
+      {/*  Social Proof Bar                                             */}
+      {/* ============================================================ */}
+      <section className="border-y border-stone-200/60 bg-white/60 backdrop-blur-sm">
+        <div className="max-w-5xl mx-auto px-6 py-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {SOCIAL_PROOF.map((item) => (
+              <div key={item.label} className="text-center">
+                <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-stone-900">
+                  {item.metric}
+                </div>
+                <div className="text-sm text-stone-500 mt-1">{item.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/*  Features                                                     */}
+      {/* ============================================================ */}
+      <section id="features" className="py-24">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl font-bold tracking-tight text-stone-900 mb-3">
+          <div className="text-center mb-16">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-600 mb-3">
+              Everything you need
+            </p>
+            <h2 className="font-heading text-3xl sm:text-4xl font-bold tracking-tight text-stone-900 mb-4">
               Your AI marketing team delivers weekly
             </h2>
-            <p className="text-stone-500 max-w-xl mx-auto">
-              Pick what you need. Your team works on it daily and sends you ready-to-use content.
+            <p className="text-stone-500 max-w-xl mx-auto text-lg">
+              Pick what you need. Your team works on it daily and sends you
+              ready-to-use content.
             </p>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              { icon: BarChart3, title: "Listing Optimization", desc: "Rewritten titles, descriptions, and tags tuned for Airbnb's search algorithm." },
-              { icon: Image, title: "Lifestyle Photos", desc: "AI-generated photos of real people enjoying your property. Seasonal updates included." },
-              { icon: MessageSquare, title: "Review Responses", desc: "Drafted replies to every guest review — positive and negative — in your voice." },
-              { icon: Calendar, title: "Social Content", desc: "Instagram and TikTok posts with captions, hashtags, and images. Ready to post." },
-              { icon: Zap, title: "Seasonal Refreshes", desc: "Updated copy and photos that match the season. Winter cozy, summer vibes, holiday charm." },
-              { icon: Sparkles, title: "Competitive Intel", desc: "How you compare to nearby listings and what they're doing that you're not." },
-            ].map((f) => (
-              <div key={f.title} className="group p-6 rounded-xl border border-stone-200 hover:border-stone-300 hover:shadow-sm transition-all">
-                <div className="w-10 h-10 rounded-lg bg-brand-50 flex items-center justify-center mb-4 group-hover:bg-brand-100 transition">
-                  <f.icon className="w-5 h-5 text-brand-600" />
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {FEATURES.map((f) => (
+              <div
+                key={f.title}
+                className="group relative bg-white rounded-2xl border border-stone-200/80 p-7 transition-all duration-300 hover:shadow-lg hover:shadow-stone-200/50 hover:border-stone-300 hover:-translate-y-1"
+              >
+                {/* Subtle gradient overlay on hover */}
+                <div
+                  className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${f.accent} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}
+                />
+                <div className="relative">
+                  <div
+                    className={`w-11 h-11 rounded-xl ${f.iconBg} flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-110`}
+                  >
+                    <f.icon className={`w-5 h-5 ${f.iconColor}`} />
+                  </div>
+                  <h3 className="font-heading font-semibold text-stone-900 mb-2 tracking-tight">
+                    {f.title}
+                  </h3>
+                  <p className="text-sm text-stone-500 leading-relaxed">
+                    {f.desc}
+                  </p>
                 </div>
-                <h3 className="font-semibold text-stone-900 mb-1">{f.title}</h3>
-                <p className="text-sm text-stone-500 leading-relaxed">{f.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="py-20">
+      {/* ============================================================ */}
+      {/*  How It Works                                                 */}
+      {/* ============================================================ */}
+      <section id="how-it-works" className="py-24 bg-white border-y border-stone-200/60">
         <div className="max-w-4xl mx-auto px-6">
-          <h2 className="text-3xl font-bold tracking-tight text-stone-900 text-center mb-14">
-            Three steps. Five minutes.
-          </h2>
-          <div className="grid md:grid-cols-3 gap-10">
-            {[
-              { step: "01", title: "Paste your URL", desc: "Drop your Airbnb or Vrbo listing link. Our AI audits your title, description, photos, reviews, and competitive positioning." },
-              { step: "02", title: "Get your score", desc: "See exactly what's wrong — and what to fix first. Plus a free AI-generated lifestyle photo of your property, ready to post." },
-              { step: "03", title: "Copy, paste, post", desc: "Every week, your AI team delivers optimized copy, lifestyle photos, and social content. You just approve and post." },
-            ].map((s) => (
-              <div key={s.step}>
-                <span className="text-sm font-mono font-semibold text-brand-500 mb-3 block">{s.step}</span>
-                <h3 className="text-lg font-semibold text-stone-900 mb-2">{s.title}</h3>
-                <p className="text-sm text-stone-500 leading-relaxed">{s.desc}</p>
+          <div className="text-center mb-16">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-600 mb-3">
+              Simple process
+            </p>
+            <h2 className="font-heading text-3xl sm:text-4xl font-bold tracking-tight text-stone-900">
+              Three steps. Five minutes.
+            </h2>
+          </div>
+          <div className="grid md:grid-cols-3 gap-12">
+            {STEPS.map((s, i) => (
+              <div key={s.step} className="relative">
+                {/* Connector line on desktop */}
+                {i < STEPS.length - 1 && (
+                  <div className="hidden md:block absolute top-6 left-full w-full h-px bg-gradient-to-r from-stone-200 to-transparent z-0" />
+                )}
+                <div className="relative">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-50 to-brand-100 border border-brand-200/50 flex items-center justify-center mb-5">
+                    <span className="text-sm font-mono font-bold text-brand-600">
+                      {s.step}
+                    </span>
+                  </div>
+                  <h3 className="font-heading text-lg font-semibold text-stone-900 mb-2 tracking-tight">
+                    {s.title}
+                  </h3>
+                  <p className="text-sm text-stone-500 leading-relaxed">
+                    {s.desc}
+                  </p>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Pricing */}
-      <section id="pricing" className="py-20 bg-white border-y border-stone-200">
+      {/* ============================================================ */}
+      {/*  Pricing                                                      */}
+      {/* ============================================================ */}
+      <section id="pricing" className="py-24">
         <div className="max-w-4xl mx-auto px-6">
-          <h2 className="text-3xl font-bold tracking-tight text-stone-900 text-center mb-14">
-            Simple pricing
-          </h2>
+          <div className="text-center mb-16">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-600 mb-3">
+              Pricing
+            </p>
+            <h2 className="font-heading text-3xl sm:text-4xl font-bold tracking-tight text-stone-900 mb-4">
+              Less than one night's booking
+            </h2>
+            <p className="text-stone-500 text-lg max-w-lg mx-auto">
+              A full marketing team for your rental. Cancel anytime.
+            </p>
+          </div>
           <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
             {/* Free */}
-            <div className="rounded-2xl border border-stone-200 p-8">
-              <h3 className="font-semibold text-lg text-stone-900 mb-1">Free Audit</h3>
-              <div className="text-4xl font-bold text-stone-900 mb-1 font-mono">$0</div>
+            <div className="relative bg-white rounded-2xl border border-stone-200 p-8 transition-all duration-300 hover:shadow-lg hover:shadow-stone-200/40 hover:-translate-y-0.5">
+              <h3 className="font-heading font-semibold text-lg text-stone-900 mb-1">
+                Free Audit
+              </h3>
+              <div className="flex items-baseline gap-1 mb-1">
+                <span className="text-4xl font-bold font-mono text-stone-900">
+                  $0
+                </span>
+              </div>
               <p className="text-stone-400 text-sm mb-6">One-time analysis</p>
               <ul className="space-y-3 text-stone-600 text-sm mb-8">
-                {["Full listing analysis", "Score out of 100", "Top 5 critical fixes", "One AI lifestyle photo preview"].map((item) => (
+                {FREE_FEATURES.map((item) => (
                   <li key={item} className="flex items-start gap-2.5">
-                    <span className="w-5 h-5 rounded-full bg-stone-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-stone-500 text-xs">✓</span>
-                    </span>
+                    <CheckCircle2 className="w-4 h-4 text-stone-400 flex-shrink-0 mt-0.5" />
                     {item}
                   </li>
                 ))}
               </ul>
-              <a href="#audit" className="block w-full text-center py-3 border border-stone-300 rounded-xl font-medium text-stone-700 hover:bg-stone-50 transition">
+              <a
+                href="#audit"
+                className="block w-full text-center py-3.5 border border-stone-300 rounded-xl font-medium text-stone-700 hover:bg-stone-50 transition-all active:scale-[0.98]"
+              >
                 Get Free Audit
               </a>
             </div>
 
             {/* Pro */}
-            <div className="rounded-2xl border-2 border-brand-500 p-8 relative">
-              <div className="absolute -top-3 left-6 bg-brand-600 text-white text-xs font-semibold px-3 py-1 rounded-full tracking-wide">
-                MOST POPULAR
+            <div className="relative bg-white rounded-2xl border-2 border-brand-500 p-8 transition-all duration-300 hover:shadow-xl hover:shadow-brand-500/10 hover:-translate-y-0.5">
+              {/* Glow effect */}
+              <div className="absolute -inset-px rounded-2xl bg-gradient-to-b from-brand-500/20 to-transparent opacity-0 hover:opacity-100 transition-opacity pointer-events-none" />
+              <div className="absolute -top-3.5 left-6 bg-gradient-to-r from-brand-600 to-brand-500 text-white text-[11px] font-bold px-3.5 py-1 rounded-full tracking-wider uppercase shadow-sm">
+                Most Popular
               </div>
-              <h3 className="font-semibold text-lg text-stone-900 mb-1">Pro</h3>
-              <div className="text-4xl font-bold text-stone-900 mb-1">
-                <span className="font-mono">$49</span>
+              <h3 className="font-heading font-semibold text-lg text-stone-900 mb-1">
+                Pro
+              </h3>
+              <div className="flex items-baseline gap-1 mb-1">
+                <span className="text-4xl font-bold font-mono text-stone-900">
+                  $49
+                </span>
                 <span className="text-lg text-stone-400 font-normal">/mo</span>
               </div>
-              <p className="text-stone-400 text-sm mb-6">A full marketing team for under $600/year</p>
+              <p className="text-stone-400 text-sm mb-6">
+                A full marketing team for under $600/year
+              </p>
               <ul className="space-y-3 text-stone-600 text-sm mb-8">
-                {[
-                  "Everything in Free",
-                  "Weekly content deliverables",
-                  "AI lifestyle photos (unlimited)",
-                  "Review response drafts",
-                  "Social media content + captions",
-                  "Seasonal listing updates",
-                  "Monthly performance reports",
-                ].map((item) => (
+                {PRO_FEATURES.map((item) => (
                   <li key={item} className="flex items-start gap-2.5">
-                    <span className="w-5 h-5 rounded-full bg-brand-50 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-brand-600 text-xs">✓</span>
-                    </span>
+                    <CheckCircle2 className="w-4 h-4 text-brand-500 flex-shrink-0 mt-0.5" />
                     {item}
                   </li>
                 ))}
               </ul>
-              <button className="block w-full text-center py-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-medium transition-all shadow-sm hover:shadow-md active:scale-[0.98]">
-                Start Pro — $49/mo
+              <button className="block w-full text-center py-3.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold transition-all shadow-md hover:shadow-lg active:scale-[0.98]">
+                Start Pro -- $49/mo
               </button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-10 border-t border-stone-200">
-        <div className="max-w-6xl mx-auto px-6 flex items-center justify-between">
-          <span className="text-sm text-stone-400">© 2026 Hospitality God</span>
-          <span className="text-sm text-stone-400">AI-powered marketing for short-term rentals</span>
+      {/* ============================================================ */}
+      {/*  Bottom CTA                                                   */}
+      {/* ============================================================ */}
+      <section className="py-24 bg-stone-950 relative overflow-hidden">
+        {/* Grid overlay */}
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.04]"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)",
+            backgroundSize: "48px 48px",
+          }}
+        />
+        {/* Gradient glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] rounded-full bg-brand-600/10 blur-[100px]" />
+        <div className="relative max-w-3xl mx-auto px-6 text-center">
+          <h2 className="font-heading text-3xl sm:text-4xl font-bold tracking-tight text-white mb-4">
+            Stop leaving bookings on the table
+          </h2>
+          <p className="text-stone-400 text-lg mb-10 max-w-xl mx-auto leading-relaxed">
+            Every week your listing sits un-optimized is revenue lost. Let your
+            AI marketing team start working today.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a
+              href="#audit"
+              className="group inline-flex items-center gap-2 px-8 py-4 bg-white text-stone-900 font-semibold rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-[0.98] text-base"
+            >
+              Run free audit
+              <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            </a>
+            <a
+              href="#pricing"
+              className="inline-flex items-center gap-2 px-8 py-4 text-stone-400 hover:text-white font-medium rounded-xl transition-all text-base"
+            >
+              View pricing
+              <ChevronRight className="w-4 h-4" />
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/*  Footer                                                       */}
+      {/* ============================================================ */}
+      <footer className="bg-stone-950 border-t border-white/[0.06] py-12">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center">
+                <span className="text-white text-xs font-bold">H</span>
+              </div>
+              <span className="text-sm font-heading font-semibold text-white/60">
+                Hospitality God
+              </span>
+            </div>
+            <div className="flex items-center gap-8 text-sm text-white/30">
+              <a
+                href="#features"
+                className="hover:text-white/60 transition-colors"
+              >
+                Features
+              </a>
+              <a
+                href="#pricing"
+                className="hover:text-white/60 transition-colors"
+              >
+                Pricing
+              </a>
+              <span>hello@hospitalitygod.com</span>
+            </div>
+            <span className="text-sm text-white/20">
+              &copy; 2026 Hospitality God
+            </span>
+          </div>
         </div>
       </footer>
     </div>
